@@ -1,0 +1,1 @@
+code ตัวอย่าง gen from claude
