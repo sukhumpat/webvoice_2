@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบเรียนรู้การออกเสียงด้วย AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #FF6B35;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --purple: #9B59B6;
+      --blue: #3498DB;
+      --green: #2ECC71;
+      --bg-light: #FFF9F0;
+      --text-dark: #2C3E50;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    /* ===== NAVBAR ===== */
+    .navbar-brand {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary) !important;
+    }
+    .navbar {
+      background: #fff;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+    .nav-link {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-dark) !important;
+      margin: 0 4px;
+      border-radius: 8px;
+      padding: 6px 14px !important;
+      transition: all 0.2s;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: var(--primary);
+      color: #fff !important;
+    }
+    .navbar-toggler { border: none; }
+
+    /* ===== HERO ===== */
+    .hero-section {
+      min-height: 92vh;
+      background: linear-gradient(135deg, #FF6B35 0%, #FF8E53 30%, #FFB347 60%, #FFD700 100%);
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+    }
+    .hero-section::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; left: -60px;
+      width: 350px; height: 350px;
+      background: rgba(255,255,255,0.10);
+      border-radius: 50%;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      border: 2px solid rgba(255,255,255,0.5);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 6px 20px;
+      border-radius: 50px;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      font-weight: 400;
+      color: rgba(255,255,255,0.92);
+      margin-top: 14px;
+      line-height: 1.6;
+    }
+    .hero-btn {
+      font-size: 1.25rem;
+      font-weight: 700;
+      padding: 14px 40px;
+      border-radius: 50px;
+      background: #fff;
+      color: var(--primary);
+      border: none;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hero-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+      color: var(--primary);
+      background: #fff8f0;
+    }
+    .hero-btn-outline {
+      font-size: 1.15rem;
+      font-weight: 600;
+      padding: 13px 32px;
+      border-radius: 50px;
+      background: transparent;
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.7);
+      transition: all 0.2s;
+    }
+    .hero-btn-outline:hover {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border-color: #fff;
+    }
+
+    /* Hero illustration SVG area */
+    .hero-illustration {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-circle-bg {
+      width: 420px;
+      height: 420px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 60px rgba(255,255,255,0.2);
+    }
+    .hero-main-svg {
+      width: 320px;
+      height: 320px;
+    }
+    .float-icon {
+      position: absolute;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      padding: 12px 16px;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      animation: floatY 3s ease-in-out infinite;
+    }
+    .float-icon:nth-child(2) { top: 10%; right: 0; animation-delay: 0.5s; font-size: 1.5rem; }
+    .float-icon:nth-child(3) { bottom: 18%; left: 0; animation-delay: 1s; }
+    .float-icon:nth-child(4) { top: 55%; right: -10px; animation-delay: 1.5s; font-size: 1.5rem; }
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    /* Hero stats */
+    .hero-stats {
+      display: flex;
+      gap: 32px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* ===== WAVE DIVIDER ===== */
+    .wave-divider { line-height: 0; overflow: hidden; }
+    .wave-divider svg { display: block; }
+
+    /* ===== FEATURES ===== */
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+    .section-subtitle {
+      font-size: 1.15rem;
+      color: #6c757d;
+      font-weight: 400;
+    }
+    .feature-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      transition: transform 0.25s, box-shadow 0.25s;
+      height: 100%;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+    }
+    .feature-icon {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 2.2rem;
+    }
+    .feature-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .feature-text { font-size: 1rem; color: #6c757d; line-height: 1.65; }
+
+    /* ===== HOW IT WORKS ===== */
+    .how-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .step-card {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 28px 20px;
+      text-align: center;
+      color: #fff;
+      position: relative;
+    }
+    .step-num {
+      width: 54px; height: 54px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .step-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+    .step-text { font-size: 0.97rem; opacity: 0.88; line-height: 1.6; }
+
+    /* ===== WORD PREVIEW ===== */
+    .word-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+      cursor: default;
+    }
+    .word-card:hover { transform: translateY(-4px); }
+    .word-emoji { font-size: 2.8rem; display: block; margin-bottom: 8px; }
+    .word-text { font-size: 1.6rem; font-weight: 800; color: var(--text-dark); }
+    .word-level {
+      font-size: 0.78rem; font-weight: 600;
+      padding: 3px 10px; border-radius: 50px;
+      display: inline-block; margin-top: 6px;
+    }
+
+    /* ===== CTA ===== */
+    .cta-section {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 28px;
+      padding: 60px 40px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 12px 40px rgba(240, 87, 108, 0.35);
+    }
+    .cta-title { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 900; }
+    .cta-subtitle { font-size: 1.15rem; opacity: 0.92; margin-top: 10px; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--text-dark);
+      color: rgba(255,255,255,0.8);
+    }
+    .footer-logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .footer-link {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--accent); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ===== RESPONSIVE TWEAKS ===== */
+    @media (max-width: 767px) {
+      .hero-circle-bg { width: 280px; height: 280px; }
+      .hero-main-svg { width: 220px; height: 220px; }
+      .float-icon { display: none; }
+      .hero-stats { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+      <span style="font-size:1.6rem;">🗣️</span> AI Pronunciation
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item"><a class="nav-link active" href="index.html">หน้าหลัก</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html">เกี่ยวกับ</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">ผู้จัดทำ</a></li>
+        <!-- <li class="nav-item ms-2">
+          <a class="btn px-4 py-2" href="app.html"
+             style="background:var(--primary);color:#fff;border-radius:50px;font-weight:700;font-size:1rem;">
+            <i class="bi bi-mic-fill me-1"></i> เริ่มฝึกเลย!
+          </a>
+        </li> -->
+        <li class="nav-item"><a class="nav-link" href="app.html">แอปฝึกออกเสียง</a></li>
+        <li class="nav-item"><a class="nav-link" href="2d_game.html">เกมฝึกออกเสียง</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero-section">
+  <div class="container position-relative" style="z-index:2;">
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-6">
+        <span class="hero-badge">✨ ระบบ AI ช่วยฝึกออกเสียง</span>
+        <h1 class="hero-title">
+          ฝึกออกเสียงภาษาไทย<br />
+          <span style="color:var(--accent);">สนุก ง่าย และ</span><br />
+          ได้ผลจริง!
+        </h1>
+        <p class="hero-subtitle">
+          ระบบเรียนรู้การออกเสียงด้วย AI สำหรับเด็กอายุ 4–7 ปี<br />
+          ช่วยพัฒนาทักษะการออกเสียงภาษาไทยอย่างมีประสิทธิภาพ
+        </p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a href="app.html" class="hero-btn text-decoration-none">
+            <i class="bi bi-mic-fill me-2"></i>เริ่มฝึกออกเสียง
+          </a>
+          <a href="about.html" class="hero-btn-outline text-decoration-none">
+            รู้จักระบบนี้ <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-num">300+</div>
+            <div class="stat-label">คำฝึกออกเสียง</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">4</div>
+            <div class="stat-label">ระดับตามอายุ</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">2</div>
+            <div class="stat-label">ระดับความยาก</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">AI</div>
+            <div class="stat-label">วิเคราะห์เสียง</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="hero-illustration">
+          <div class="hero-circle-bg">
+            <!-- Inline SVG illustration -->
+            <svg class="hero-main-svg" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Child face -->
+              <circle cx="160" cy="140" r="90" fill="#FFDAB9"/>
+              <!-- Hair -->
+              <ellipse cx="160" cy="65" rx="75" ry="42" fill="#4A2C0A"/>
+              <ellipse cx="90" cy="95" rx="22" ry="30" fill="#4A2C0A"/>
+              <ellipse cx="230" cy="95" rx="22" ry="30" fill="#4A2C0A"/>
+              <!-- Eyes -->
+              <ellipse cx="132" cy="140" rx="14" ry="16" fill="#fff"/>
+              <ellipse cx="188" cy="140" rx="14" ry="16" fill="#fff"/>
+              <circle cx="135" cy="142" r="9" fill="#3D2B1F"/>
+              <circle cx="191" cy="142" r="9" fill="#3D2B1F"/>
+              <circle cx="138" cy="138" r="3" fill="#fff"/>
+              <circle cx="194" cy="138" r="3" fill="#fff"/>
+              <!-- Cheeks -->
+              <ellipse cx="115" cy="168" rx="16" ry="10" fill="#FFB6A3" opacity="0.6"/>
+              <ellipse cx="205" cy="168" rx="16" ry="10" fill="#FFB6A3" opacity="0.6"/>
+              <!-- Mouth (open, speaking) -->
+              <ellipse cx="160" cy="180" rx="26" ry="16" fill="#E05A6A"/>
+              <ellipse cx="160" cy="183" rx="22" ry="10" fill="#C0392B"/>
+              <rect x="142" y="175" width="36" height="8" fill="#FFDAB9"/>
+              <!-- Teeth -->
+              <rect x="144" y="175" width="14" height="7" rx="2" fill="#fff"/>
+              <rect x="161" y="175" width="14" height="7" rx="2" fill="#fff"/>
+              <!-- Ears -->
+              <ellipse cx="72" cy="145" rx="14" ry="18" fill="#FFDAB9"/>
+              <ellipse cx="248" cy="145" rx="14" ry="18" fill="#FFDAB9"/>
+              <!-- Body -->
+              <rect x="100" y="220" width="120" height="80" rx="30" fill="#4ECDC4"/>
+              <!-- Arms -->
+              <rect x="55" y="220" width="50" height="25" rx="12" fill="#4ECDC4" transform="rotate(-15 55 220)"/>
+              <rect x="215" y="220" width="50" height="25" rx="12" fill="#4ECDC4" transform="rotate(15 215 220)"/>
+              <!-- Sound waves -->
+              <path d="M270 150 Q285 140 285 155 Q285 170 270 160" stroke="#FFE66D" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M278 135 Q300 120 300 155 Q300 190 278 175" stroke="#FFE66D" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M286 120 Q315 100 315 155 Q315 210 286 190" stroke="rgba(255,230,109,0.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div class="float-icon" style="top:8%;right:-15px;">🎤</div>
+            <div class="float-icon" style="bottom:12%;left:-20px;">🌟</div>
+            <div class="float-icon" style="top:52%;right:-25px;font-size:1.1rem;padding:10px 14px;">95%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Wave Divider -->
+<div class="wave-divider" style="background:linear-gradient(135deg,#FF6B35,#FFD700);">
+  <svg viewBox="0 0 1200 80" preserveAspectRatio="none" style="height:70px;width:100%;">
+    <path d="M0,40 C300,80 900,0 1200,40 L1200,80 L0,80 Z" fill="var(--bg-light)"/>
+  </svg>
+</div>
+
+<!-- ===== FEATURES ===== -->
+<section class="py-5 py-lg-6">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="section-title">ทำไมต้องเลือกระบบของเรา?</h2>
+      <p class="section-subtitle mt-2">ออกแบบมาเพื่อเด็ก ๆ โดยเฉพาะ ด้วยเทคโนโลยี AI ที่ทันสมัย</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#FFF3E0;">🎤</div>
+          <div class="feature-title">รับเสียงจากไมโครโฟน</div>
+          <p class="feature-text">บันทึกเสียงพูดของเด็กผ่านไมโครโฟนโดยตรง พร้อมแสดงคลื่นเสียงแบบ Real-time ให้เด็กเห็นเสียงตัวเอง</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#E8F5E9;">📊</div>
+          <div class="feature-title">วิเคราะห์ด้วย AI</div>
+          <p class="feature-text">ระบบ AI วิเคราะห์เสียงและแสดงผลคะแนนความแม่นยำในการออกเสียงเป็นเปอร์เซ็นต์ทันที</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#E3F2FD;">📚</div>
+          <div class="feature-title">คำศัพท์ 300+ คำ</div>
+          <p class="feature-text">คลังคำศัพท์ภาษาไทยมากกว่า 300 คำ แบ่งตามอายุ 4–7 ปี และระดับความยากง่าย</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#F3E5F5;">🏆</div>
+          <div class="feature-title">เก็บประวัติคะแนน</div>
+          <p class="feature-text">บันทึกผลการฝึก 10 ครั้งล่าสุดอัตโนมัติ ช่วยติดตามพัฒนาการของเด็กได้อย่างต่อเนื่อง</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#FFF8E1;">⭐</div>
+          <div class="feature-title">เหมาะสมตามวัย</div>
+          <p class="feature-text">คำและภาพประกอบออกแบบให้เหมาะกับพัฒนาการตามช่วงอายุ ส่งเสริมการเรียนรู้อย่างเป็นธรรมชาติ</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#FCE4EC;">🎮</div>
+          <div class="feature-title">สนุกและน่าดึงดูด</div>
+          <p class="feature-text">ออกแบบให้เด็กสนุกสนานกับการฝึก มีภาพสวยงาม สีสันสดใส และระบบรางวัลกระตุ้นแรงบันดาลใจ</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how-section py-5 py-lg-6">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="section-title text-white">ใช้งานง่ายแค่ 4 ขั้นตอน</h2>
+      <p class="section-subtitle text-white opacity-75">เริ่มฝึกออกเสียงได้เลยโดยไม่ต้องติดตั้งแอปพลิเคชันใด ๆ</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-title">เลือกระดับ</div>
+          <p class="step-text">เลือกช่วงอายุและระดับความยากที่เหมาะกับเด็ก</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-title">ดูคำศัพท์</div>
+          <p class="step-text">ดูภาพและคำที่ต้องการฝึกออกเสียง พร้อมตัวอักษรขนาดใหญ่</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-title">กดพูดและบันทึก</div>
+          <p class="step-text">กดปุ่มไมโครโฟนและออกเสียงคำนั้น ระบบจะบันทึกเสียงโดยอัตโนมัติ</p>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-title">ดูผลลัพธ์</div>
+          <p class="step-text">รับคะแนนความแม่นยำและคำแนะนำเพื่อพัฒนาต่อไป</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WORD PREVIEW ===== -->
+<section class="py-5 py-lg-6" style="background:#fff;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="section-title">ตัวอย่างคำศัพท์ในระบบ</h2>
+      <p class="section-subtitle mt-2">คำศัพท์ภาษาไทยที่คุ้นเคยสำหรับเด็ก ๆ</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="word-card">
+          <span class="word-emoji">🐱</span>
+          <div class="word-text">แมว</div>
+          <span class="word-level" style="background:#E8F5E9;color:#2ECC71;">ง่าย</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="word-card">
+          <span class="word-emoji">🌺</span>
+          <div class="word-text">ดอกไม้</div>
+          <span class="word-level" style="background:#FFF8E1;color:#F39C12;">ปานกลาง</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="word-card">
+          <span class="word-emoji">🍎</span>
+          <div class="word-text">แอปเปิ้ล</div>
+          <span class="word-level" style="background:#FCE4EC;color:#E91E63;">ยาก</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="word-card">
+          <span class="word-emoji">🐘</span>
+          <div class="word-text">ช้าง</div>
+          <span class="word-level" style="background:#E8F5E9;color:#2ECC71;">ง่าย</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="word-card">
+          <span class="word-emoji">☀️</span>
+          <div class="word-text">ดวงอาทิตย์</div>
+          <span class="word-level" style="background:#FCE4EC;color:#E91E63;">ยาก</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="word-card">
+          <span class="word-emoji">🏠</span>
+          <div class="word-text">บ้าน</div>
+          <span class="word-level" style="background:#E8F5E9;color:#2ECC71;">ง่าย</span>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <a href="app.html" class="btn btn-lg px-5 py-3 fw-700"
+         style="background:var(--primary);color:#fff;border-radius:50px;font-size:1.1rem;font-weight:700;">
+        <i class="bi bi-collection me-2"></i>ดูคำทั้งหมด 300+ คำ
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="py-5 py-lg-6">
+  <div class="container">
+    <div class="cta-section">
+      <div class="fs-1 mb-3">🚀</div>
+      <h2 class="cta-title">พร้อมเริ่มต้นฝึกออกเสียงแล้วหรือยัง?</h2>
+      <p class="cta-subtitle">เริ่มต้นได้เลยฟรี ไม่ต้องลงทะเบียน ไม่ต้องติดตั้ง</p>
+      <div class="mt-4">
+        <a href="app.html" class="btn btn-lg px-5 py-3"
+           style="background:#fff;color:#f5576c;border-radius:50px;font-weight:800;font-size:1.2rem;box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+          <i class="bi bi-mic-fill me-2"></i>เริ่มฝึกออกเสียงทันที!
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="pt-5 pb-3">
+  <div class="container">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4">
+        <div class="footer-logo mb-3">🗣️ AI Pronunciation</div>
+        <p style="font-size:0.95rem;color:rgba(255,255,255,0.6);line-height:1.7;">
+          ระบบเรียนรู้การออกเสียงด้วย AI สำหรับเด็กผู้มีปัญหาทางการออกเสียง
+          อายุ 4–7 ปี พัฒนาทักษะการสื่อสารอย่างมีประสิทธิภาพ
+        </p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="text-white fw-700 mb-3">เมนูหลัก</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="index.html" class="footer-link">หน้าหลัก</a></li>
+          <li class="mb-2"><a href="about.html" class="footer-link">เกี่ยวกับ</a></li>
+          <li class="mb-2"><a href="contact.html" class="footer-link">ผู้จัดทำ</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">แอปฝึกออกเสียง</a></li>
+          <li class="mb-2"><a href="2d_game.html" class="footer-link">เกมฝึกออกเสียง</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h6 class="text-white fw-700 mb-3">ระดับการฝึก</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="app.html" class="footer-link">👶 อายุ 4 ปี (ระดับเริ่มต้น)</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">🧒 อายุ 5 ปี</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">🧒 อายุ 6 ปี</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">👦 อายุ 7 ปี (ขั้นสูง)</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3">
+        <h6 class="text-white fw-700 mb-3">ติดต่อ</h6>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.9rem;line-height:1.8;">
+          <i class="bi bi-envelope me-2"></i>contact@aipronunciation.th<br/>
+          <i class="bi bi-telephone me-2"></i>02-xxx-xxxx<br/>
+          <i class="bi bi-geo-alt me-2"></i>กรุงเทพมหานคร ประเทศไทย
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom text-center pt-3">
+      <p class="mb-0">&copy; 2567 ระบบเรียนรู้การออกเสียงด้วย AI | พัฒนาด้วย ❤️ เพื่อเด็กไทย</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

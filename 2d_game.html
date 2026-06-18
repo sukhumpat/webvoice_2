@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeechQuest - เกมฝึกออกเสียงสำหรับเด็ก</title>
+    <!-- โหลด Phaser 3 Game Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <!-- นำเข้าฟอนต์น่ารักๆ สำหรับเด็ก -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Mitr:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #eef1f6;
+            font-family: 'Mitr', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 800px;  /* 🌟 เพิ่มบรรทัดนี้ */
+			height: 600px; /* 🌟 เพิ่มบรรทัดนี้ */
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        /* --- สไตล์ของ UI Overlay (หน้าเมนูหลัก) --- */
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 800px;
+            height: 600px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+        }
+
+        .ui-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 80%;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #fff;
+        }
+
+        .menu-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 20px;
+            font-family: 'Mitr', sans-serif;
+            margin: 8px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(76,175,80,0.3);
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+            background-color: #45a049;
+        }
+
+        .menu-btn.orange { background-color: #ff9800; box-shadow: 0 4px 10px rgba(255,152,0,0.3); }
+        .menu-btn.orange:hover { background-color: #e68a00; }
+        .menu-btn.blue { background-color: #2196f3; box-shadow: 0 4px 10px rgba(33,150,243,0.3); }
+        .menu-btn.blue:hover { background-color: #0b7dda; }
+
+        input[type="text"] {
+            padding: 12px 20px;
+            font-size: 18px;
+            border: 2px solid #ffb3a7;
+            border-radius: 50px;
+            margin-bottom: 15px;
+            width: 80%;
+            text-align: center;
+            outline: none;
+            font-family: 'Mitr', sans-serif;
+        }
+
+        /* --- สไตล์ของ Popup Mini-game --- */
+        #popup-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 800px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-box {
+            background: white;
+            width: 500px;
+            border-radius: 32px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 8px solid #ffd166;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .word-illustration {
+            font-size: 80px;
+            margin: 10px 0;
+        }
+
+        .word-thai {
+            font-size: 48px;
+            color: #06d6a0;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .word-reading {
+            font-size: 22px;
+            color: #118ab2;
+            background: #e7f5f9;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .mic-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background-color: #ef476f;
+            border: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(239,71,111,0.4);
+            transition: all 0.2s;
+        }
+
+        .mic-btn:hover { transform: scale(1.05); }
+        .mic-btn.listening {
+            animation: pulse 1s infinite;
+            background-color: #4caf50;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76,175,80,0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(76,175,80,0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+        }
+
+        .status-text {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #666;
+            height: 25px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- หน้าจอ UI: เมนูหลัก -->
+        <div id="main-menu" class="ui-overlay">
+            <div class="ui-card">
+                <h1>🌳 SpeechQuest 🌳</h1>
+                <p style="color: #666; margin-bottom: 25px;">ตะลุยแดนมหัศจรรย์ ฝึกออกเสียงแสนสนุก</p>
+                <button class="menu-btn" onclick="showScreen('name-input')">เล่นเกม</button>
+                <button class="menu-btn orange" onclick="showScreen('how-to')">วิธีเล่น</button>
+                <button class="menu-btn blue" onclick="showScreen('credits')">ผู้จัดทำ</button>
+            </div>
+        </div>
+
+        <!-- หน้าจอ UI: กรอกชื่อ -->
+        <div id="name-input" class="ui-overlay hidden">
+            <div class="ui-card">
+                <h2 style="color: #ff6b6b; margin-bottom: 15px;">บอกชื่อฮีโร่ตัวน้อยหน่อยจ้า</h2>
+                <input type="text" id="player-name-field" placeholder="กรอกชื่อของคุณตรงนี้..." maxlength="10">
+                <br>
+                <button class="menu-btn" onclick="startGame()">เข้าสู่เกม 🚀</button>
+                <button class="menu-btn orange" onclick="showScreen('main-menu')">ย้อนกลับ</button>
+            </div>
+        </div>
+
+        <!-- หน้าจอ UI: วิธีเล่น -->
+        <div id="how-to" class="ui-overlay hidden">
+            <div class="ui-card" style="text-align: left;">
+                <h2 style="text-align: center; color: #ff9800;">🎮 วิธีสนุกกับเกม</h2>
+                <p>1. ใช้ปุ่ม <b>ลูกศร (↑ ↓ ← →)</b> บังคับตัวละครน่ารักเดินสำรวจฉากชนบท</p>
+                <p>2. เดินไปชน <b>กล่องไอเทมวิเศษ ⭐</b> ที่กระจายอยู่ตามท้องทุ่ง</p>
+                <p>3. เมื่อมีหน้าต่างแสดงขึ้นมา ให้กดปุ่ม <b>ไมโครโฟน 🎤</b> แล้วออกเสียงคำที่เห็นให้ชัดเจน</p>
+                <center><button class="menu-btn orange" onclick="showScreen('main-menu')">เข้าใจแล้ว!</button></center>
+            </div>
+        </div>
+
+        <!-- หน้าจอ UI: ผู้จัดทำ -->
+        <div id="credits" class="ui-overlay hidden">
+            <div class="ui-card">
+                <h2 style="color: #2196f3;">👨‍💻 ผู้จัดทำโปรเจกต์</h2>
+                <p style="font-size: 18px; font-weight: bold;">ไอเดียระบบสร้างสรรค์โดยคุณ</p>
+                <p style="color: #555;">เกมฝึกออกเสียง Client-Side ด้วย Phaser 3 และ Web Speech API เพื่อการบำบัดและพัฒนาการพูดสำหรับเด็กอายุ 4-7 ปี</p>
+                <button class="menu-btn blue" onclick="showScreen('main-menu')">กลับหน้าหลัก</button>
+            </div>
+        </div>
+
+        <!-- หน้าจอ UI: Popup Mini-game ฝึกออกเสียง -->
+        <div id="popup-container">
+            <div class="popup-box">
+                <div class="word-illustration" id="pop-emoji">🐦</div>
+                <div class="word-thai" id="pop-word">นก</div>
+                <div class="word-reading" id="pop-reading">คำอ่าน: นก</div>
+                <br>
+                <button class="mic-btn" id="mic-button" onclick="startVoiceRecognition()">🎤</button>
+                <div class="status-text" id="status-text">กดปุ่มไมค์แล้วพูดได้เลยจ้า...</div>
+                
+                <!-- ปุ่มช่วยกรณีที่ทดสอบผ่านเครื่องที่ไม่มีไมค์ หรือ Browser ไม่รองรับ -->
+                <button onclick="simulateCorrect()" style="margin-top: 20px; background: #ddd; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; color: #666; font-size: 11px;">
+                    [จำลองว่าพูดถูก (สําหรับทดสอบ)]
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- ข้อมูลสถานะและฐานข้อมูลคำศัพท์ในเกม ---
+        let playerName = "ฮีโร่ตัวน้อย";
+        let score = 0;
+        let totalItems = 5;
+        let currentActiveItem = null; // เก็บอ้างอิงไอเทมที่กำลังชน
+        let phaserGame = null; // เก็บอินสแตนซ์ของเกม
+
+        const wordsDatabase = [
+            { word: "นก", reading: "นก (แม่กก)", emoji: "🐦" },
+            { word: "บ้าน", reading: "บ้า-น (แม่กน)", emoji: "🏠" },
+            { word: "ลิง", reading: "ลิ-ง (แม่กง)", emoji: "🐒" },
+            { word: "กบ", reading: "กบ (แม่กบ)", emoji: "🐸" },
+            { word: "มด", reading: "มด (แม่กด)", emoji: "🐜" }
+        ];
+
+        // --- ระบบสลับหน้าจอ UI เอนิเมชันนุ่มนวล ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.ui-overlay').forEach(el => el.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        // --- เริ่มต้นโหลดเอนจิ้น Phaser 3 ---
+        function startGame() {
+            const inputName = document.getElementById('player-name-field').value.trim();
+            if (inputName) playerName = inputName;
+
+            document.getElementById('name-input').classList.add('hidden');
+            
+            // ป้องกันการสร้างอินสแตนซ์ซ้ำ
+            if (!phaserGame) {
+                const config = {
+                    type: Phaser.AUTO,
+                    width: 800,
+                    height: 600,
+                    parent: 'game-container',
+                    physics: {
+                        default: 'arcade',
+                        arcade: { debug: false }
+                    },
+                    scene: [MainGameScene]
+                };
+                phaserGame = new Phaser.Game(config);
+            } else {
+                phaserGame.scene.scenes[0].scene.restart();
+            }
+        }
+
+        // --- นิยามฉากเกม Phaser 3 (Main Gameplay) ---
+        class MainGameScene extends Phaser.Scene {
+            constructor() {
+                super('MainGameScene');
+            }
+
+            preload() {
+                // สร้างตัวละครและ Texture พื้นฐานแบบโปรแกรมมิ่ง (หมดห่วงเรื่องรูปภาพไม่โหลด)
+                let canvas = this.textures.createCanvas('player_texture', 40, 40);
+                let ctx = canvas.context;
+                ctx.fillStyle = '#ff6b6b'; // สีตัวละคร
+                ctx.beginPath();
+                ctx.arc(20, 20, 20, 0, Math.PI * 2);
+                ctx.fill();
+                // วาดดวงตาน่ารักๆ
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.arc(12, 15, 5, 0, Math.PI * 2); ctx.arc(28, 15, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#000000';
+                ctx.beginPath(); ctx.arc(12, 15, 2, 0, Math.PI * 2); ctx.arc(28, 15, 2, 0, Math.PI * 2); ctx.fill();
+                canvas.refresh();
+            }
+
+            create() {
+                // รีเซ็ตคะแนนเมื่อเริ่มเกมใหม่
+                score = 0;
+
+                // 1. วาดฉากหลัง: ชนบทแสนสวย (Meadow & Grass)
+                this.add.rectangle(400, 300, 800, 600, 0xa7c957); // หญ้าเขียวขจี
+                
+                // วาดลำธาร (Stream) เลี้ยวผ่านกลางฉาก
+                let river = this.add.graphics();
+                river.fillStyle(0x3a86ff, 1);
+                river.fillRect(0, 250, 800, 70);
+
+                // วาดสะพานไม้ (Wooden Bridge) เพื่อใช้ข้ามลำธาร
+                let bridge = this.add.graphics();
+                bridge.fillStyle(0xb7b7a4, 1); // ขอบสะพาน
+                bridge.fillRect(380, 240, 90, 90);
+                bridge.fillStyle(0xddb892, 1); // พื้นสะพานไม้
+                bridge.fillRect(390, 240, 70, 90);
+
+                // วาดบ้านหลังคาสีส้มที่ให้ความอบอุ่น (Cozy House)
+                let houseBase = this.add.rectangle(150, 150, 120, 100, 0xfaedcd); // ตัวบ้าน
+                let roof = this.add.graphics();
+                roof.fillStyle(0xf77f00, 1); // หลังคาส้ม
+                roof.fillTriangle(150, 60, 80, 150, 220, 150);
+                let door = this.add.rectangle(150, 175, 30, 50, 0xdda15e); // ประตูบ้าน
+
+                // ตกแต่งธรรมชาติเพิ่มเติม (ต้นไม้ทรงพุ่ม)
+                this.drawTree(650, 120);
+                this.drawTree(100, 480);
+                this.drawTree(700, 450);
+
+                // 2. สร้างกลุ่มไอเทมวิเศษ (Items Group)
+                this.items = this.physics.add.group();
+                const spawnPositions = [
+                    {x: 150, y: 380}, {x: 600, y: 180}, 
+                    {x: 650, y: 480}, {x: 425, y: 150}, {x: 250, y: 500}
+                ];
+
+                for (let i = 0; i < spawnPositions.length; i++) {
+                    let data = wordsDatabase[i % wordsDatabase.length];
+                    // สร้าง Text object แทนไอเทม (กล่องของขวัญ/ดาว)
+                    let itemSprite = this.add.text(spawnPositions[i].x, spawnPositions[i].y, '⭐', { font: '32px Arial' }).setOrigin(0.5);
+                    this.physics.add.existing(itemSprite);
+                    itemSprite.body.setCircle(16);
+                    itemSprite.setData('wordData', data); // ฝังข้อมูลคำศัพท์เข้าไปในไอเทม
+                    this.items.add(itemSprite);
+
+                    // เอนิเมชันไอเทมลอยขึ้นลงเบาๆ ให้ดูมีชีวิตชีวา
+                    this.tweens.add({
+                        targets: itemSprite,
+                        y: itemSprite.y - 10,
+                        duration: 1000 + Math.random()*500,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut'
+                    });
+                }
+
+                // 3. สร้างตัวละครผู้เล่น (Player)
+                this.player = this.physics.add.sprite(425, 450, 'player_texture');
+                this.player.setCollideWorldBounds(true);
+
+                // สร้างชื่อผู้เล่นลอยบนหัวตัวละคร
+                this.nameText = this.add.text(this.player.x, this.player.y - 35, playerName, {
+                    fontFamily: 'Mitr',
+                    fontSize: '16px',
+                    fill: '#ffffff',
+                    backgroundColor: '#333333',
+                    padding: { x: 6, y: 3 },
+                    borderRadius: 8
+                }).setOrigin(0.5);
+
+                // 4. แสดงผลคะแนนและจำนวนไอเทมที่มุมบนขวา (UI In-game)
+                this.scoreText = this.add.text(780, 20, `คะแนน: ${score} | ไอเทม: 0/${totalItems}`, {
+                    fontFamily: 'Mitr',
+                    fontSize: '20px',
+                    fill: '#333333',
+                    backgroundColor: '#ffffff',
+                    padding: { x: 12, y: 6 }
+                }).setOrigin(1, 0);
+
+                // 5. ตั้งค่าปุ่มควบคุม (Keyboard)
+                this.cursors = this.input.keyboard.createCursorKeys();
+
+                // 6. ระบบตรวจสอบการชน (Collision Handling)
+                this.physics.add.overlap(this.player, this.items, this.handleItemCollision, null, this);
+            }
+
+            update() {
+                // ควบคุมความเร็วตัวละคร
+                const speed = 200;
+                this.player.setVelocity(0);
+
+                if (this.cursors.left.isDown) {
+                    this.player.setVelocityX(-speed);
+                } else if (this.cursors.right.isDown) {
+                    this.player.setVelocityX(speed);
+                }
+
+                if (this.cursors.up.isDown) {
+                    this.player.setVelocityY(-speed);
+                } else if (this.cursors.down.isDown) {
+                    this.player.setVelocityY(speed);
+                }
+
+                // อัปเดตตำแหน่งชื่อตามตำแหน่งตัวละคร
+                this.nameText.x = this.player.x;
+                this.nameText.y = this.player.y - 35;
+            }
+
+            drawTree(x, y) {
+                let trunk = this.add.rectangle(x, y+20, 15, 30, 0x6c584c);
+                let leaves = this.add.graphics();
+                leaves.fillStyle(0x386641, 1);
+                leaves.beginPath(); leaves.arc(x, y, 25, 0, Math.PI * 2); leaves.fill();
+            }
+
+            handleItemCollision(player, item) {
+                // หยุดการเคลื่อนไหวของตัวละครทันทีที่ชน
+                player.setVelocity(0);
+                this.physics.pause(); // หยุดลูปฟิสิกส์ของเกมชั่วคราว
+                
+                currentActiveItem = item;
+                let wordData = item.getData('wordData');
+
+                // นำข้อมูลส่งเข้าไปแสดงใน Popup Mini-game บน HTML DOM
+                document.getElementById('pop-emoji').innerText = wordData.emoji;
+                document.getElementById('pop-word').innerText = wordData.word;
+                document.getElementById('pop-reading').innerText = `คำอ่าน: ${wordData.reading}`;
+                document.getElementById('status-text').innerText = "กดปุ่มไมค์แล้วพูดได้เลยจ้า...";
+                document.getElementById('status-text').style.color = "#666";
+                document.getElementById('mic-button').className = "mic-btn";
+                
+                // เปิดแสดงผลหน้าต่างมินิเกม
+                document.getElementById('popup-container').style.display = 'flex';
+            }
+
+            updateScoreUI() {
+                let itemsCollected = totalItems - this.items.countActive();
+                this.scoreText.setText(`คะแนน: ${score} | ไอเทม: ${itemsCollected}/${totalItems}`);
+            }
+        }
+
+        // --- ระบบประมวลผลเสียงฝั่ง Client (Web Speech API) ---
+        let recognition = null;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'th-TH'; // กำหนดให้ฟังภาษาไทย
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                let micBtn = document.getElementById('mic-button');
+                micBtn.classList.add('listening');
+                document.getElementById('status-text').innerText = "🌟 กำลังฟังฮีโร่พูดอยู่นะจ๊ะ...";
+                document.getElementById('status-text').style.color = "#4caf50";
+            };
+
+            recognition.onerror = function(event) {
+                resetMicButton();
+                document.getElementById('status-text').innerText = "❌ ไม่ค่อยได้ยินเลย ลองกดพูดอีกทีนะคนเก่ง!";
+                document.getElementById('status-text').style.color = "#ef476f";
+            };
+
+            recognition.onresult = function(event) {
+                resetMicButton();
+                const spokenText = event.results[0][0].transcript.trim();
+                const targetWord = document.getElementById('pop-word').innerText;
+                
+                console.log("เด็กพูดว่า: " + spokenText + " | คำที่ต้องการ: " + targetWord);
+
+                // เปรียบเทียบผลลัพธ์ (ความแม่นยำภาษาไทยระดับพื้นฐานฝั่ง Client)
+                if (spokenText.includes(targetWord) || targetWord.includes(spokenText)) {
+                    processCorrectPronunciation();
+                } else {
+                    document.getElementById('status-text').innerText = `หนูออกเสียงว่า "${spokenText}" ลองใหม่อีกครั้งนะจ๊ะ!`;
+                    document.getElementById('status-text').style.color = "#ff9800";
+                }
+            };
+        } else {
+            console.warn("Browser นี้ไม่สนับสนุน Web Speech API (แนะนำให้เปิดบน Google Chrome)");
+        }
+
+        function startVoiceRecognition() {
+            if (!recognition) {
+                alert("เบราว์เซอร์นี้ไม่รองรับระบบตรวจจับเสียงทางไมโครโฟน โปรดคลิกที่ปุ่ม [จำลองว่าพูดถูก] ด้านล่างแทนได้เลยครับ");
+                return;
+            }
+            recognition.start();
+        }
+
+        function resetMicButton() {
+            let micBtn = document.getElementById('mic-button');
+            micBtn.classList.remove('listening');
+        }
+
+        // เมื่อเด็กออกเสียงถูกต้องสำเร็จ
+        function processCorrectPronunciation() {
+            document.getElementById('status-text').innerText = "🎉 เก่งมากเลย! ออกเสียงถูกต้องที่สุด ✨";
+            document.getElementById('status-text').style.color = "#06d6a0";
+            
+            score += 10; // เพิ่มคะแนน
+
+            // หน่วงเวลาแป๊บหนึ่งเพื่อให้เด็กดูความสำเร็จ ก่อนปิดหน้าต่างกลับเข้าเกม
+            setTimeout(() => {
+                document.getElementById('popup-container').style.display = 'none';
+                
+                if (currentActiveItem) {
+                    let scene = phaserGame.scene.scenes[0];
+                    currentActiveItem.destroy(); // ลบไอเทมชิ้นนั้นออกไปจากฉาก
+                    scene.updateScoreUI();
+                    
+                    // ปลดล็อกตัวละคร กลับเข้าสู่สภาวะเล่นเกมต่อได้
+                    scene.physics.resume();
+
+                    // เช็กเงื่อนไขกรณีเคลียร์เกมสำเร็จครบทุกไอเทม
+                    if (scene.items.countActive() === 0) {
+                        alert(`🏆 ยินดีด้วยจ้า ฮีโร่ "${playerName}" ฝึกออกเสียงครบถ้วน ได้คะแนนไปทั้งหมด ${score} คะแนนจ้า! 🎉`);
+                        showScreen('main-menu');
+                    }
+                }
+            }, 1500);
+        }
+
+        // ระบบสำรองในกรณีที่เครื่องทดสอบไม่ได้ต่อไมโครโฟน
+        function simulateCorrect() {
+            resetMicButton();
+            processCorrectPronunciation();
+        }
+    </script>
+</body>
+</html>

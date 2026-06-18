@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แอปฝึกออกเสียง - ระบบเรียนรู้การออกเสียงด้วย AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #FF6B35;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --purple: #9B59B6;
+      --blue: #3498DB;
+      --green: #2ECC71;
+      --bg-light: #FFF9F0;
+      --text-dark: #2C3E50;
+    }
+    body { font-family: 'Prompt', sans-serif; background: var(--bg-light); color: var(--text-dark); }
+
+    /* NAVBAR */
+    .navbar { background: #fff; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
+    .navbar-brand { font-size: 1.4rem; font-weight: 800; color: var(--primary) !important; }
+    .nav-link { font-size: 1.05rem; font-weight: 600; color: var(--text-dark) !important; margin: 0 4px; border-radius: 8px; padding: 6px 14px !important; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { background: var(--primary); color: #fff !important; }
+
+    /* APP LAYOUT */
+    .app-container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
+
+    /* FILTER BAR */
+    .filter-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px 24px;
+      box-shadow: 0 3px 18px rgba(0,0,0,0.07);
+      margin-bottom: 24px;
+    }
+    .filter-label { font-size: 0.85rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .age-btn, .diff-btn {
+      border: 2px solid #e0e0e0;
+      border-radius: 50px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 8px 22px;
+      margin: 4px;
+      cursor: pointer;
+      background: #fff;
+      color: #666;
+      transition: all 0.2s;
+    }
+    .age-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .diff-btn.easy.active { border-color: var(--green); background: var(--green); color: #fff; }
+    .diff-btn.hard.active { border-color: #E74C3C; background: #E74C3C; color: #fff; }
+    .age-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+    .diff-btn.easy:hover:not(.active) { border-color: var(--green); color: var(--green); }
+    .diff-btn.hard:hover:not(.active) { border-color: #E74C3C; color: #E74C3C; }
+
+    /* WORD CARD */
+    .word-display-card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 36px 28px;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.09);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .word-display-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    }
+    .word-number { font-size: 0.85rem; color: #bbb; font-weight: 600; margin-bottom: 6px; }
+    .word-emoji-display { font-size: 7rem; line-height: 1; margin: 8px 0; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
+    .word-thai { font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 900; color: var(--text-dark); margin: 8px 0; line-height: 1.1; }
+    .word-hint { font-size: 1.1rem; color: #999; margin-bottom: 8px; }
+    .word-level-badge {
+      display: inline-block;
+      padding: 5px 18px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin: 4px;
+    }
+
+    /* WAVEFORM */
+    .waveform-container {
+      background: #1a1a2e;
+      border-radius: 16px;
+      padding: 12px;
+      margin: 20px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    #waveCanvas {
+      width: 100%;
+      height: 80px;
+      display: block;
+      border-radius: 10px;
+    }
+    .waveform-idle-msg {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      color: rgba(255,255,255,0.35);
+      font-size: 0.9rem;
+      font-weight: 600;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    /* MIC BUTTON */
+    .mic-section { text-align: center; margin: 16px 0; }
+    #micBtn {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      border: none;
+      font-size: 2.4rem;
+      background: linear-gradient(135deg, var(--primary), #FF8E53);
+      color: #fff;
+      box-shadow: 0 6px 24px rgba(255,107,53,0.4);
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      font-family: inherit;
+    }
+    #micBtn:hover { transform: scale(1.08); box-shadow: 0 10px 32px rgba(255,107,53,0.5); }
+    #micBtn.recording {
+      background: linear-gradient(135deg, #E74C3C, #C0392B);
+      box-shadow: 0 6px 24px rgba(231,76,60,0.5);
+      animation: pulse-mic 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse-mic {
+      0%, 100% { transform: scale(1); box-shadow: 0 6px 24px rgba(231,76,60,0.5); }
+      50% { transform: scale(1.12); box-shadow: 0 10px 40px rgba(231,76,60,0.7); }
+    }
+    .mic-label { font-size: 0.9rem; color: #999; margin-top: 8px; font-weight: 600; }
+
+    /* RESULT */
+    .result-section {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 3px 18px rgba(0,0,0,0.07);
+      margin-top: 20px;
+      display: none;
+    }
+    .result-section.show { display: block; animation: fadeInUp 0.4s ease; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .score-circle {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 2rem;
+      font-weight: 900;
+      border: 6px solid;
+    }
+    .score-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+    .recognized-text { font-size: 1.1rem; color: #555; margin-top: 10px; }
+    .recognized-text span { font-weight: 800; color: var(--text-dark); }
+    .feedback-msg { font-size: 1.3rem; font-weight: 800; margin-top: 8px; }
+
+    /* NAV BUTTONS */
+    .nav-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .btn-nav {
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      border: 2px solid;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-prev { border-color: #ddd; color: #666; background: #fff; }
+    .btn-prev:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-next { border-color: var(--primary); color: #fff; background: var(--primary); }
+    .btn-next:hover { background: #e55d28; border-color: #e55d28; }
+    .btn-shuffle { border-color: var(--secondary); color: var(--secondary); background: #fff; }
+    .btn-shuffle:hover { background: var(--secondary); color: #fff; }
+
+    /* PROGRESS BAR */
+    .progress-section { margin-bottom: 6px; }
+    .progress-info { display: flex; justify-content: space-between; font-size: 0.85rem; color: #888; font-weight: 600; margin-bottom: 6px; }
+    .progress { height: 8px; border-radius: 50px; background: #eee; }
+    .progress-bar { border-radius: 50px; transition: width 0.5s ease; }
+
+    /* HISTORY */
+    .history-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 3px 18px rgba(0,0,0,0.07);
+    }
+    .history-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-emoji { font-size: 1.5rem; width: 40px; text-align: center; }
+    .history-word { font-size: 1.05rem; font-weight: 700; flex: 1; }
+    .history-score {
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 50px;
+      min-width: 56px;
+      text-align: center;
+    }
+    .history-time { font-size: 0.75rem; color: #bbb; font-weight: 500; }
+    .history-empty { text-align: center; color: #ccc; font-size: 0.95rem; padding: 24px 0; }
+
+    /* WORD LIST PANEL */
+    .word-list-panel {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 3px 18px rgba(0,0,0,0.07);
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    .word-list-panel::-webkit-scrollbar { width: 6px; }
+    .word-list-panel::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+    .wl-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .wl-item:hover { background: #fff3ee; }
+    .wl-item.current { background: #fff3ee; border: 1px solid var(--primary); }
+    .wl-emoji { font-size: 1.3rem; width: 32px; text-align: center; }
+    .wl-word { font-size: 1rem; font-weight: 700; }
+    .wl-done { margin-left: auto; }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .stat-chip {
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 18px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      text-align: center;
+      flex: 1;
+      min-width: 90px;
+    }
+    .stat-chip-num { font-size: 1.5rem; font-weight: 900; }
+    .stat-chip-label { font-size: 0.78rem; color: #999; font-weight: 600; margin-top: 2px; }
+
+    /* PERMISSION OVERLAY */
+    .perm-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      display: none;
+    }
+    .perm-box {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    /* FOOTER */
+    footer { background: var(--text-dark); color: rgba(255,255,255,0.8); }
+    .footer-logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+    .footer-link { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.95rem; transition: color 0.2s; }
+    .footer-link:hover { color: var(--accent); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; color: rgba(255,255,255,0.45); }
+
+    @media (max-width: 767px) {
+      .word-thai { font-size: 3rem; }
+      .word-emoji-display { font-size: 5rem; }
+      #micBtn { width: 78px; height: 78px; font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+      <span style="font-size:1.6rem;">🗣️</span> AI Pronunciation
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" href="index.html">หน้าหลัก</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html">เกี่ยวกับ</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">ผู้จัดทำ</a></li>
+        <!-- <li class="nav-item ms-2">
+          <a class="btn px-4 py-2" href="app.html"
+             style="background:var(--primary);color:#fff;border-radius:50px;font-weight:700;font-size:1rem;">
+            <i class="bi bi-mic-fill me-1"></i> เริ่มฝึกเลย!
+          </a>
+        </li> -->
+        <li class="nav-item"><a class="nav-link" href="app.html">แอปฝึกออกเสียง</a></li>
+        <li class="nav-item"><a class="nav-link" href="2d_game.html">เกมฝึกออกเสียง</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- APP -->
+<div class="app-container">
+  <div class="text-center mb-4">
+    <h1 style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;">🎤 แอปฝึกออกเสียงภาษาไทย</h1>
+    <p style="color:#888;font-size:1rem;">เลือกระดับอายุและความยาก จากนั้นกดปุ่มไมโครโฟนแล้วออกเสียงคำที่แสดง</p>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-section">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-6">
+        <div class="filter-label">👶 เลือกช่วงอายุ</div>
+        <div>
+          <button class="age-btn active" data-age="4">4 ปี</button>
+          <button class="age-btn" data-age="5">5 ปี</button>
+          <button class="age-btn" data-age="6">6 ปี</button>
+          <button class="age-btn" data-age="7">7 ปี</button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="filter-label">⚡ ระดับความยาก</div>
+        <div>
+          <button class="diff-btn easy active" data-diff="easy">🟢 ง่าย</button>
+          <button class="diff-btn hard" data-diff="hard">🔴 ยาก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-chip">
+      <div class="stat-chip-num" style="color:var(--primary);" id="statTotal">0</div>
+      <div class="stat-chip-label">คำทั้งหมด</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-num" style="color:var(--green);" id="statDone">0</div>
+      <div class="stat-chip-label">ฝึกแล้ว</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-num" style="color:var(--blue);" id="statAvg">—</div>
+      <div class="stat-chip-label">คะแนนเฉลี่ย</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-num" style="color:var(--purple);" id="statBest">—</div>
+      <div class="stat-chip-label">คะแนนสูงสุด</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- MAIN PRACTICE AREA -->
+    <div class="col-lg-7">
+
+      <!-- PROGRESS -->
+      <div class="progress-section mb-3">
+        <div class="progress-info">
+          <span id="progressLabel">คำที่ 1 / 60</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="progressBar" style="width:0%;background:linear-gradient(90deg,var(--primary),var(--secondary));"></div>
+        </div>
+      </div>
+
+      <!-- WORD DISPLAY -->
+      <div class="word-display-card">
+        <div class="word-number" id="wordNumber">คำที่ 1</div>
+        <span class="word-emoji-display" id="wordEmoji">🐱</span>
+        <div class="word-thai" id="wordThai">แมว</div>
+        <div class="word-hint" id="wordHint">สัตว์เลี้ยงที่น่ารัก ร้อง "เมี๊ยว"</div>
+        <div>
+          <span class="word-level-badge" id="ageBadge" style="background:#FFF3E0;color:var(--primary);">👶 4 ปี</span>
+          <span class="word-level-badge" id="diffBadge" style="background:#E8F5E9;color:var(--green);">🟢 ง่าย</span>
+        </div>
+      </div>
+
+      <!-- WAVEFORM -->
+      <div class="waveform-container">
+        <canvas id="waveCanvas" height="80"></canvas>
+        <div class="waveform-idle-msg" id="waveMsg">🎵 คลื่นเสียงจะแสดงที่นี่เมื่อกดบันทึก</div>
+      </div>
+
+      <!-- MIC BUTTON -->
+      <div class="mic-section">
+        <button id="micBtn" onclick="toggleRecording()">🎤</button>
+        <div class="mic-label" id="micLabel">กดเพื่อบันทึกเสียง</div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-section" id="resultSection">
+        <div class="text-center">
+          <div class="score-circle" id="scoreCircle">
+            <span id="scoreNum">0%</span>
+            <span class="score-label" id="scoreLabel">คะแนน</span>
+          </div>
+          <div class="feedback-msg" id="feedbackMsg">—</div>
+          <div class="recognized-text">ที่คุณพูด: "<span id="recognizedSpan">—</span>"</div>
+        </div>
+        <hr class="my-3"/>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <button class="btn" style="border-radius:50px;font-family:Prompt;font-weight:700;border:2px solid #ddd;color:#666;" onclick="retryWord()">
+            🔄 ลองใหม่
+          </button>
+          <button class="btn" style="border-radius:50px;font-family:Prompt;font-weight:700;background:var(--primary);color:#fff;" onclick="nextWord()">
+            คำถัดไป <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- NAV BUTTONS -->
+      <div class="nav-btns">
+        <button class="btn-nav btn-prev" onclick="prevWord()">← ก่อนหน้า</button>
+        <button class="btn-nav btn-shuffle" onclick="shuffleWords()">🔀 สุ่มคำ</button>
+        <button class="btn-nav btn-next" onclick="nextWord()">ถัดไป →</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="col-lg-5">
+      <!-- HISTORY -->
+      <div class="history-card mb-4">
+        <div class="history-title">
+          <span>📋</span> ประวัติ 10 ครั้งล่าสุด
+          <button class="btn btn-sm ms-auto" style="border-radius:50px;font-family:Prompt;font-size:0.8rem;border:1px solid #eee;color:#999;" onclick="clearHistory()">ล้าง</button>
+        </div>
+        <div id="historyList">
+          <div class="history-empty">ยังไม่มีประวัติการฝึก<br/>กดไมโครโฟนเพื่อเริ่มต้น!</div>
+        </div>
+      </div>
+
+      <!-- WORD LIST -->
+      <div class="history-card">
+        <div class="history-title"><span>📚</span> รายการคำในชุดนี้</div>
+        <div class="word-list-panel" id="wordListPanel"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PERMISSION OVERLAY -->
+<div class="perm-overlay" id="permOverlay">
+  <div class="perm-box">
+    <div style="font-size:4rem;">🎤</div>
+    <h4 style="font-weight:800;margin:16px 0 8px;">ต้องการสิทธิ์ไมโครโฟน</h4>
+    <p style="color:#888;font-size:0.95rem;">กรุณาอนุญาตให้เว็บไซต์เข้าถึงไมโครโฟน เพื่อบันทึกเสียงของคุณ</p>
+    <button class="btn btn-lg mt-2" style="background:var(--primary);color:#fff;border-radius:50px;font-family:Prompt;font-weight:700;width:100%;"
+            onclick="document.getElementById('permOverlay').style.display='none';">
+      รับทราบ
+    </button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="pt-5 pb-3 mt-4">
+  <div class="container">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4">
+        <div class="footer-logo mb-3">🗣️ AI Pronunciation</div>
+        <p style="font-size:0.95rem;color:rgba(255,255,255,0.6);line-height:1.7;">ระบบเรียนรู้การออกเสียงด้วย AI สำหรับเด็กผู้มีปัญหาทางการออกเสียง อายุ 4–7 ปี</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="text-white fw-700 mb-3">เมนูหลัก</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="index.html" class="footer-link">หน้าหลัก</a></li>
+          <li class="mb-2"><a href="about.html" class="footer-link">เกี่ยวกับ</a></li>
+          <li class="mb-2"><a href="contact.html" class="footer-link">ผู้จัดทำ</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">แอปฝึกออกเสียง</a></li>
+          <li class="mb-2"><a href="2d_game.html" class="footer-link">เกมฝึกออกเสียง</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h6 class="text-white fw-700 mb-3">ระดับการฝึก</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2" style="color:rgba(255,255,255,0.6);font-size:0.9rem;">👶 อายุ 4 ปี</li>
+          <li class="mb-2" style="color:rgba(255,255,255,0.6);font-size:0.9rem;">🧒 อายุ 5 ปี</li>
+          <li class="mb-2" style="color:rgba(255,255,255,0.6);font-size:0.9rem;">🧒 อายุ 6 ปี</li>
+          <li class="mb-2" style="color:rgba(255,255,255,0.6);font-size:0.9rem;">👦 อายุ 7 ปี</li>
+        </ul>
+      </div>
+      <div class="col-lg-3">
+        <h6 class="text-white fw-700 mb-3">หมายเหตุ</h6>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.88rem;line-height:1.7;">
+          ระบบรองรับ Chrome / Edge เท่านั้น<br/>
+          ต้องเชื่อมต่ออินเทอร์เน็ต<br/>
+          ใช้ Web Speech API (Google)
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom text-center pt-3">
+      <p class="mb-0">&copy; 2567 ระบบเรียนรู้การออกเสียงด้วย AI | พัฒนาด้วย ❤️ เพื่อเด็กไทย</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ===== WORD DATABASE (300+ คำ) =====
+const WORDS = {
+  4: {
+    easy: [
+      {w:'แมว',e:'🐱',h:'สัตว์เลี้ยงที่น่ารัก'},{w:'หมา',e:'🐶',h:'สัตว์เลี้ยงซื่อสัตย์'},{w:'ปลา',e:'🐟',h:'สัตว์น้ำที่ว่ายน้ำ'},
+      {w:'ไก่',e:'🐔',h:'สัตว์ปีกให้ไข่'},{w:'วัว',e:'🐄',h:'สัตว์ให้นม'},{w:'ช้าง',e:'🐘',h:'สัตว์ใหญ่คู่ไทย'},
+      {w:'ม้า',e:'🐴',h:'สัตว์วิ่งเร็ว'},{w:'หมู',e:'🐷',h:'สัตว์อ้วนกลม'},{w:'กบ',e:'🐸',h:'กระโดดเก่ง'},
+      {w:'ผึ้ง',e:'🐝',h:'แมลงทำน้ำผึ้ง'},{w:'ผีเสื้อ',e:'🦋',h:'แมลงปีกสวย'},{w:'นก',e:'🐦',h:'สัตว์บินได้'},
+      {w:'ข้าว',e:'🍚',h:'อาหารหลักของไทย'},{w:'น้ำ',e:'💧',h:'สิ่งมีชีวิตต้องการ'},{w:'นม',e:'🥛',h:'ดื่มแล้วแข็งแรง'},
+      {w:'ไข่',e:'🥚',h:'อาหารอร่อย'},{w:'บ้าน',e:'🏠',h:'ที่อยู่อาศัย'},{w:'รถ',e:'🚗',h:'ยานพาหนะ'},
+      {w:'เรือ',e:'⛵',h:'แล่นในน้ำ'},{w:'แม่',e:'👩',h:'ผู้ให้กำเนิด'},{w:'พ่อ',e:'👨',h:'ผู้ปกครอง'},
+      {w:'พี่',e:'👧',h:'คนที่โตกว่า'},{w:'น้อง',e:'👶',h:'คนที่เล็กกว่า'},{w:'มือ',e:'✋',h:'ส่วนของร่างกาย'},
+      {w:'เท้า',e:'🦶',h:'ใช้เดิน'},{w:'หัว',e:'😊',h:'อยู่บนร่างกาย'},{w:'ตา',e:'👁️',h:'ใช้มอง'},
+      {w:'หู',e:'👂',h:'ใช้ฟัง'},{w:'ปาก',e:'👄',h:'ใช้พูด'},{w:'ฟัน',e:'🦷',h:'ใช้เคี้ยว'},
+      {w:'แดง',e:'🔴',h:'สีสวยงาม'},{w:'เขียว',e:'🟢',h:'สีของต้นไม้'},{w:'เหลือง',e:'🟡',h:'สีของดวงอาทิตย์'},
+      {w:'ขาว',e:'⚪',h:'สีของเมฆ'},{w:'ดำ',e:'⚫',h:'สีของกลางคืน'},{w:'ดี',e:'👍',h:'ความหมายบวก'},
+      {w:'ใหญ่',e:'🐘',h:'ขนาดโต'},{w:'เล็ก',e:'🐭',h:'ขนาดน้อย'},{w:'ร้อน',e:'☀️',h:'ความรู้สึกเมื่อโดนแสงแดด'},
+      {w:'เย็น',e:'❄️',h:'ความรู้สึกเมื่อถูกน้ำแข็ง'},{w:'กิน',e:'🍽️',h:'นำอาหารเข้าปาก'},{w:'นอน',e:'😴',h:'การพักผ่อน'},
+      {w:'เดิน',e:'🚶',h:'การเคลื่อนที่'},{w:'วิ่ง',e:'🏃',h:'เคลื่อนที่เร็ว'},{w:'เล่น',e:'🎮',h:'กิจกรรมสนุก'},
+      {w:'ดิน',e:'🪨',h:'พื้นโลก'},{w:'หิน',e:'🪨',h:'วัตถุแข็ง'},{w:'ฝน',e:'🌧️',h:'น้ำจากท้องฟ้า'},
+      {w:'ดาว',e:'⭐',h:'แสงบนท้องฟ้ายามคืน'},{w:'เมฆ',e:'☁️',h:'ไอน้ำบนท้องฟ้า'},{w:'ดวง',e:'🌟',h:'สิ่งสว่างไสว'},
+      {w:'โต๊ะ',e:'🪑',h:'เฟอร์นิเจอร์'},{w:'เก้าอี้',e:'🪑',h:'นั่งพักผ่อน'},{w:'ประตู',e:'🚪',h:'ทางเข้า-ออก'},
+      {w:'หน้าต่าง',e:'🪟',h:'ช่องรับแสง'},{w:'ไฟ',e:'🔥',h:'ให้แสงและความร้อน'},{w:'ดอก',e:'🌸',h:'ส่วนของต้นไม้'}
+    ],
+    hard: [
+      {w:'กระต่าย',e:'🐰',h:'สัตว์หูยาว'},{w:'เต่า',e:'🐢',h:'สัตว์เดินช้า'},{w:'แรด',e:'🦏',h:'สัตว์มีนอ'},
+      {w:'มะม่วง',e:'🥭',h:'ผลไม้ไทย'},{w:'กล้วย',e:'🍌',h:'ผลไม้เหลือง'},{w:'ส้ม',e:'🍊',h:'ผลไม้รสเปรี้ยว'},
+      {w:'แตงโม',e:'🍉',h:'ผลไม้แดง'},{w:'สับปะรด',e:'🍍',h:'ผลไม้มีหนาม'},{w:'มังคุด',e:'🍇',h:'ราชินีผลไม้'},
+      {w:'ลำไย',e:'🟡',h:'ผลไม้ไทย'},{w:'ทุเรียน',e:'🟡',h:'ราชาผลไม้'},{w:'ลองกอง',e:'🟡',h:'ผลไม้เล็ก'},
+      {w:'กะหล่ำ',e:'🥦',h:'ผักสีเขียว'},{w:'ฟักทอง',e:'🎃',h:'ผักสีส้ม'},{w:'แครอท',e:'🥕',h:'ผักสีส้ม'},
+      {w:'ผักชี',e:'🌿',h:'ผักหอม'},{w:'สีชมพู',e:'🩷',h:'สีสวยงาม'},{w:'สีม่วง',e:'💜',h:'สีของม่วง'},
+      {w:'สีส้ม',e:'🟠',h:'สีของส้ม'},{w:'สีน้ำตาล',e:'🟫',h:'สีของดิน'},{w:'ตุ๊กตา',e:'🪆',h:'ของเล่นเด็ก'},
+      {w:'ลูกบอล',e:'⚽',h:'ของเล่นกลม'},{w:'กรรไกร',e:'✂️',h:'อุปกรณ์ตัด'},{w:'ดินสอ',e:'✏️',h:'อุปกรณ์เขียน'},
+      {w:'กระเป๋า',e:'👜',h:'ใส่ของ'},{w:'รองเท้า',e:'👟',h:'ใส่เท้า'},{w:'หมวก',e:'🎩',h:'ใส่หัว'},
+      {w:'แว่นตา',e:'👓',h:'ช่วยการมองเห็น'},{w:'นาฬิกา',e:'⌚',h:'บอกเวลา'},{w:'กระจก',e:'🪞',h:'ดูเงาตัวเอง'}
+    ]
+  },
+  5: {
+    easy: [
+      {w:'ครู',e:'👩‍🏫',h:'ผู้สอน'},{w:'นักเรียน',e:'🎒',h:'ผู้เรียน'},{w:'เพื่อน',e:'👫',h:'คนที่คุ้นเคย'},
+      {w:'โรงเรียน',e:'🏫',h:'สถานที่เรียน'},{w:'ห้องเรียน',e:'🏫',h:'ห้องสำหรับเรียน'},{w:'กระดาน',e:'📋',h:'ใช้เขียน'},
+      {w:'หนังสือ',e:'📚',h:'แหล่งความรู้'},{w:'ดินสอ',e:'✏️',h:'ใช้เขียน'},{w:'ยางลบ',e:'🟥',h:'ลบรอยเขียน'},
+      {w:'ไม้บรรทัด',e:'📏',h:'วัดขนาด'},{w:'สีเทียน',e:'🖍️',h:'ระบายสี'},{w:'กาว',e:'🧴',h:'ติดของ'},
+      {w:'กระดาษ',e:'📄',h:'ใช้เขียน'},{w:'ดอกไม้',e:'🌺',h:'ของสวยงาม'},{w:'ต้นไม้',e:'🌳',h:'พืชขนาดใหญ่'},
+      {w:'ใบไม้',e:'🍃',h:'ส่วนของต้นไม้'},{w:'ผลไม้',e:'🍎',h:'อาหารรสหวาน'},{w:'ผัก',e:'🥦',h:'อาหารมีประโยชน์'},
+      {w:'อาหาร',e:'🍽️',h:'สิ่งที่กิน'},{w:'ขนม',e:'🍰',h:'ของหวาน'},{w:'น้ำผลไม้',e:'🧃',h:'เครื่องดื่มจากผลไม้'},
+      {w:'ข้าวต้ม',e:'🍲',h:'อาหารเช้า'},{w:'ก๋วยเตี๋ยว',e:'🍜',h:'อาหารยอดนิยม'},{w:'ข้าวผัด',e:'🍳',h:'อาหารง่ายๆ'},
+      {w:'ต้มยำ',e:'🍲',h:'อาหารไทยรสเผ็ด'},{w:'ส้มตำ',e:'🥗',h:'อาหารไทย'},{w:'ผัดไทย',e:'🍜',h:'อาหารขึ้นชื่อ'},
+      {w:'สวน',e:'🌿',h:'พื้นที่ปลูกต้นไม้'},{w:'ทุ่งนา',e:'🌾',h:'พื้นที่ปลูกข้าว'},{w:'ภูเขา',e:'⛰️',h:'สิ่งสูงในธรรมชาติ'},
+      {w:'แม่น้ำ',e:'🌊',h:'น้ำที่ไหล'},{w:'ทะเล',e:'🌊',h:'น้ำขนาดใหญ่'},{w:'ชายหาด',e:'🏖️',h:'บริเวณริมทะเล'},
+      {w:'ฟ้า',e:'🌤️',h:'ท้องฟ้าสีฟ้า'},{w:'แดด',e:'☀️',h:'แสงจากดวงอาทิตย์'},{w:'ลม',e:'💨',h:'อากาศที่พัด'},
+      {w:'พายุ',e:'🌪️',h:'ลมแรง'},{w:'หิมะ',e:'❄️',h:'น้ำแข็งจากฟ้า'},{w:'สายรุ้ง',e:'🌈',h:'สีสวยหลังฝน'},
+      {w:'ดวงอาทิตย์',e:'☀️',h:'ให้แสงและความร้อน'},{w:'ดวงจันทร์',e:'🌙',h:'บนท้องฟ้ายามคืน'},{w:'ดาวเคราะห์',e:'🪐',h:'ในระบบสุริยะ'},
+      {w:'จักรยาน',e:'🚲',h:'ยานพาหนะสองล้อ'},{w:'รถไฟ',e:'🚂',h:'ยานพาหนะบนราง'},{w:'เครื่องบิน',e:'✈️',h:'บินบนฟ้า'},
+      {w:'เรือ',e:'⛵',h:'เดินทางในน้ำ'},{w:'กระโดด',e:'🏃',h:'เคลื่อนที่พุ่งขึ้น'},{w:'ว่ายน้ำ',e:'🏊',h:'เคลื่อนที่ในน้ำ'},
+      {w:'วาดรูป',e:'🎨',h:'สร้างภาพ'},{w:'ร้องเพลง',e:'🎤',h:'ออกเสียงเพลง'},{w:'เต้นรำ',e:'💃',h:'เคลื่อนไหวตามดนตรี'},
+      {w:'อ่านหนังสือ',e:'📖',h:'รับความรู้'},{w:'เขียนหนังสือ',e:'✍️',h:'บันทึกข้อมูล'},{w:'วิ่งเล่น',e:'🏃',h:'ออกกำลังกาย'}
+    ],
+    hard: [
+      {w:'กระรอก',e:'🐿️',h:'สัตว์ฟันแทะ'},{w:'กวาง',e:'🦌',h:'สัตว์มีเขา'},{w:'นกแก้ว',e:'🦜',h:'นกพูดได้'},
+      {w:'โลมา',e:'🐬',h:'สัตว์น้ำฉลาด'},{w:'ฉลาม',e:'🦈',h:'ปลาขนาดใหญ่'},{w:'จระเข้',e:'🐊',h:'สัตว์เลื้อยคลาน'},
+      {w:'แมงมุม',e:'🕷️',h:'สัตว์ 8 ขา'},{w:'หอยทาก',e:'🐌',h:'เดินช้า'},{w:'ปลาหมึก',e:'🦑',h:'สัตว์ทะเล'},
+      {w:'สับปะรด',e:'🍍',h:'ผลไม้มีหนาม'},{w:'มะละกอ',e:'🍈',h:'ผลไม้สีส้ม'},{w:'ลิ้นจี่',e:'🍒',h:'ผลไม้สีแดง'},
+      {w:'ช็อกโกแลต',e:'🍫',h:'ของหวาน'},{w:'ไอศกรีม',e:'🍦',h:'ของเย็นหวาน'},{w:'คุกกี้',e:'🍪',h:'ขนมอบ'},
+      {w:'คอมพิวเตอร์',e:'💻',h:'เครื่องมือทำงาน'},{w:'โทรทัศน์',e:'📺',h:'ดูหนัง'},{w:'ตู้เย็น',e:'🧊',h:'เก็บอาหาร'},
+      {w:'เครื่องซักผ้า',e:'🫧',h:'ซักเสื้อผ้า'},{w:'เตาอบ',e:'♨️',h:'อบขนม'},{w:'พัดลม',e:'💨',h:'ทำให้เย็น'},
+      {w:'ห้องน้ำ',e:'🚿',h:'อาบน้ำ'},{w:'ห้องนอน',e:'🛏️',h:'พักผ่อน'},{w:'ห้องครัว',e:'🍳',h:'ทำอาหาร'},
+      {w:'สวนสนุก',e:'🎡',h:'สถานบันเทิง'},{w:'สวนสัตว์',e:'🦁',h:'ที่ดูสัตว์'},{w:'พิพิธภัณฑ์',e:'🏛️',h:'แหล่งเรียนรู้'},
+      {w:'โรงพยาบาล',e:'🏥',h:'รักษาคนป่วย'},{w:'ตลาด',e:'🏪',h:'ซื้อขายสินค้า'},{w:'ร้านอาหาร',e:'🍽️',h:'กินอาหาร'}
+    ]
+  },
+  6: {
+    easy: [
+      {w:'ครอบครัว',e:'👨‍👩‍👧‍👦',h:'คนที่รักกัน'},{w:'ปู่',e:'👴',h:'พ่อของพ่อหรือแม่'},{w:'ย่า',e:'👵',h:'แม่ของพ่อ'},
+      {w:'ตา',e:'👴',h:'พ่อของแม่'},{w:'ยาย',e:'👵',h:'แม่ของแม่'},{w:'ลุง',e:'👨',h:'พี่ชายของพ่อแม่'},
+      {w:'ป้า',e:'👩',h:'พี่สาวของพ่อแม่'},{w:'หมอ',e:'👨‍⚕️',h:'รักษาคนป่วย'},{w:'พยาบาล',e:'👩‍⚕️',h:'ช่วยหมอ'},
+      {w:'ตำรวจ',e:'👮',h:'รักษาความปลอดภัย'},{w:'ทหาร',e:'💂',h:'ปกป้องประเทศ'},{w:'ดับเพลิง',e:'🧑‍🚒',h:'ดับไฟ'},
+      {w:'เกษตรกร',e:'👨‍🌾',h:'ปลูกพืช'},{w:'ช่างไฟฟ้า',e:'👷',h:'ซ่อมไฟ'},{w:'คนขับรถ',e:'🚗',h:'ขับพาหนะ'},
+      {w:'นักดนตรี',e:'🎵',h:'เล่นดนตรี'},{w:'นักกีฬา',e:'⚽',h:'เล่นกีฬา'},{w:'นักวิทยาศาสตร์',e:'🔬',h:'ค้นคว้าวิจัย'},
+      {w:'วิทยาศาสตร์',e:'🔬',h:'การศึกษาธรรมชาติ'},{w:'คณิตศาสตร์',e:'➕',h:'วิชาตัวเลข'},{w:'ภาษาไทย',e:'🇹🇭',h:'วิชาภาษา'},
+      {w:'สังคม',e:'🌍',h:'วิชาเกี่ยวกับสังคม'},{w:'ศิลปะ',e:'🎨',h:'วิชาสร้างสรรค์'},{w:'ดนตรี',e:'🎵',h:'วิชาเพลง'},
+      {w:'กีฬา',e:'⚽',h:'การออกกำลังกาย'},{w:'ฟุตบอล',e:'⚽',h:'กีฬายอดนิยม'},{w:'บาสเกตบอล',e:'🏀',h:'กีฬาใส่ตะกร้า'},
+      {w:'ว่ายน้ำ',e:'🏊',h:'กีฬาในน้ำ'},{w:'วิ่งเปี้ยว',e:'🏃',h:'กีฬาวิ่งรวม'},{w:'ยิมนาสติก',e:'🤸',h:'กีฬาความยืดหยุ่น'},
+      {w:'หมากรุก',e:'♟️',h:'เกมกระดาน'},{w:'ไพ่',e:'🃏',h:'เกมไพ่'},{w:'หมากเบี้ย',e:'⚫',h:'เกมกระดาน'},
+      {w:'เทศกาล',e:'🎊',h:'งานฉลอง'},{w:'วันหยุด',e:'🎉',h:'ไม่ต้องทำงาน'},{w:'วันเกิด',e:'🎂',h:'วันครบรอบเกิด'},
+      {w:'ของขวัญ',e:'🎁',h:'สิ่งที่ให้กัน'},{w:'บอลลูน',e:'🎈',h:'ลูกโป่ง'},{w:'พลุ',e:'🎆',h:'แสงสีสวยงาม'},
+      {w:'ไหว้',e:'🙏',h:'การแสดงความเคารพ'},{w:'กราบ',e:'🙇',h:'แสดงความเคารพ'},{w:'ยิ้ม',e:'😊',h:'แสดงความสุข'},
+      {w:'ร้องไห้',e:'😢',h:'แสดงความเศร้า'},{w:'หัวเราะ',e:'😂',h:'แสดงความสนุก'},{w:'โกรธ',e:'😡',h:'ความรู้สึกโกรธ'},
+      {w:'กลัว',e:'😨',h:'ความรู้สึกกลัว'},{w:'แปลกใจ',e:'😲',h:'ความรู้สึกประหลาดใจ'},{w:'ง่วงนอน',e:'😴',h:'อยากนอน'}
+    ],
+    hard: [
+      {w:'ประชาธิปไตย',e:'🗳️',h:'ระบอบการปกครอง'},{w:'รัฐบาล',e:'🏛️',h:'ผู้บริหารประเทศ'},{w:'รัฐสภา',e:'🏛️',h:'สถานที่ออกกฎหมาย'},
+      {w:'กฎหมาย',e:'⚖️',h:'ข้อบังคับของสังคม'},{w:'สิทธิมนุษยชน',e:'✊',h:'สิทธิพื้นฐาน'},{w:'สิ่งแวดล้อม',e:'🌍',h:'ธรรมชาติรอบตัว'},
+      {w:'มลภาวะ',e:'💨',h:'ความสกปรกของสิ่งแวดล้อม'},{w:'ขยะ',e:'🗑️',h:'ของที่ไม่ต้องการ'},{w:'รีไซเคิล',e:'♻️',h:'นำกลับมาใช้ใหม่'},
+      {w:'พลังงาน',e:'⚡',h:'แหล่งพลังงาน'},{w:'ไฟฟ้า',e:'💡',h:'พลังงานแสง'},{w:'พลังงานแสงอาทิตย์',e:'☀️',h:'พลังงานสะอาด'},
+      {w:'โทรศัพท์มือถือ',e:'📱',h:'อุปกรณ์สื่อสาร'},{w:'อินเทอร์เน็ต',e:'🌐',h:'เครือข่ายสื่อสาร'},{w:'โซเชียลมีเดีย',e:'📱',h:'สื่อสังคมออนไลน์'},
+      {w:'แผ่นดินไหว',e:'🌋',h:'ภัยธรรมชาติ'},{w:'น้ำท่วม',e:'🌊',h:'ภัยธรรมชาติ'},{w:'ภัยแล้ง',e:'🌵',h:'ขาดน้ำ'},
+      {w:'วัฒนธรรม',e:'🎭',h:'ประเพณีของสังคม'},{w:'ประเพณี',e:'🎎',h:'การปฏิบัติสืบทอด'},{w:'ศาสนา',e:'🙏',h:'ความเชื่อ'},
+      {w:'สถาปัตยกรรม',e:'🏛️',h:'การออกแบบอาคาร'},{w:'จิตรกรรม',e:'🖼️',h:'งานศิลปะ'},{w:'ประติมากรรม',e:'🗽',h:'งานปั้น'},
+      {w:'ดาราศาสตร์',e:'🔭',h:'การศึกษาดวงดาว'},{w:'ระบบสุริยะ',e:'🌌',h:'ดวงอาทิตย์และดาวเคราะห์'},{w:'กาแล็กซี',e:'🌌',h:'กลุ่มดาวขนาดใหญ่'}
+    ]
+  },
+  7: {
+    easy: [
+      {w:'ประเทศไทย',e:'🇹🇭',h:'ประเทศของเรา'},{w:'กรุงเทพมหานคร',e:'🏙️',h:'เมืองหลวง'},{w:'เชียงใหม่',e:'🌺',h:'เมืองทางเหนือ'},
+      {w:'ภูเก็ต',e:'🏖️',h:'เกาะทางใต้'},{w:'พัทยา',e:'🌊',h:'เมืองชายทะเล'},{w:'อยุธยา',e:'🏛️',h:'อดีตราชธานี'},
+      {w:'สุโขทัย',e:'🕌',h:'เมืองเก่า'},{w:'เชียงราย',e:'⛰️',h:'จังหวัดทางเหนือ'},{w:'ขอนแก่น',e:'🌾',h:'เมืองอีสาน'},
+      {w:'นครราชสีมา',e:'🦌',h:'โคราช'},{w:'สงขลา',e:'🦢',h:'เมืองใต้'},{w:'หาดใหญ่',e:'🌴',h:'เมืองการค้าใต้'},
+      {w:'ความรู้',e:'📚',h:'สิ่งที่ได้จากการเรียน'},{w:'การศึกษา',e:'🎓',h:'กระบวนการเรียนรู้'},{w:'วิจัย',e:'🔬',h:'ค้นหาความจริง'},
+      {w:'ทดลอง',e:'⚗️',h:'ทดสอบสมมติฐาน'},{w:'สมมติฐาน',e:'💭',h:'ข้อสันนิษฐาน'},{w:'ข้อสรุป',e:'✅',h:'ผลสุดท้าย'},
+      {w:'การสื่อสาร',e:'📡',h:'การส่งข้อมูล'},{w:'ภาษา',e:'💬',h:'เครื่องมือสื่อสาร'},{w:'ไวยากรณ์',e:'📝',h:'กฎของภาษา'},
+      {w:'คำศัพท์',e:'📖',h:'คำในภาษา'},{w:'บทกวี',e:'📜',h:'งานวรรณกรรม'},{w:'นวนิยาย',e:'📕',h:'หนังสือเรื่องแต่ง'},
+      {w:'สารคดี',e:'📰',h:'รายงานความจริง'},{w:'ข่าวสาร',e:'📻',h:'ข้อมูลทันสมัย'},{w:'สื่อมวลชน',e:'📺',h:'สื่อข้อมูล'},
+      {w:'โรงเรียน',e:'🏫',h:'สถานที่เรียน'},{w:'มหาวิทยาลัย',e:'🎓',h:'สถานศึกษาสูงสุด'},{w:'ห้องสมุด',e:'📚',h:'แหล่งรวมหนังสือ'},
+      {w:'พิพิธภัณฑ์',e:'🏛️',h:'แหล่งเรียนรู้'},{w:'หอศิลป์',e:'🖼️',h:'แหล่งงานศิลปะ'},{w:'อุทยาน',e:'🌲',h:'พื้นที่ธรรมชาติ'},
+      {w:'ชีวิต',e:'🌱',h:'การมีชีวิต'},{w:'ธรรมชาติ',e:'🌿',h:'โลกของพืชสัตว์'},{w:'จักรวาล',e:'🌌',h:'สิ่งทั้งหมด'}
+    ],
+    hard: [
+      {w:'วิทยาศาสตร์',e:'🔬',h:'ศาสตร์แห่งธรรมชาติ'},{w:'คณิตศาสตร์',e:'📐',h:'วิชาตัวเลขและตรรกะ'},{w:'ภูมิศาสตร์',e:'🗺️',h:'วิชาพื้นที่โลก'},
+      {w:'ประวัติศาสตร์',e:'📜',h:'เรื่องราวในอดีต'},{w:'เศรษฐศาสตร์',e:'💰',h:'วิชาการเงิน'},{w:'สังคมวิทยา',e:'👥',h:'วิชาสังคม'},
+      {w:'จิตวิทยา',e:'🧠',h:'วิชาจิตใจ'},{w:'ปรัชญา',e:'🤔',h:'การตั้งคำถามชีวิต'},{w:'มานุษยวิทยา',e:'🦴',h:'วิชามนุษย์'},
+      {w:'เทคโนโลยี',e:'💻',h:'การประยุกต์ใช้วิทยาศาสตร์'},{w:'นวัตกรรม',e:'💡',h:'สิ่งประดิษฐ์ใหม่'},{w:'ปัญญาประดิษฐ์',e:'🤖',h:'AI'},
+      {w:'หุ่นยนต์',e:'🤖',h:'เครื่องจักรอัตโนมัติ'},{w:'อัลกอริธึม',e:'⚙️',h:'ขั้นตอนการแก้ปัญหา'},{w:'โปรแกรมมิ่ง',e:'💻',h:'การเขียนโปรแกรม'},
+      {w:'ชีววิทยา',e:'🧬',h:'วิชาสิ่งมีชีวิต'},{w:'เคมี',e:'⚗️',h:'วิชาสสาร'},{w:'ฟิสิกส์',e:'⚛️',h:'วิชาพลังงาน'},
+      {w:'ดาราศาสตร์',e:'🔭',h:'วิชาดวงดาว'},{w:'ธรณีวิทยา',e:'🌋',h:'วิชาพื้นโลก'},{w:'สมุทรศาสตร์',e:'🌊',h:'วิชาทะเล'},
+      {w:'นิเวศวิทยา',e:'🌿',h:'วิชาระบบนิเวศ'},{w:'พันธุกรรม',e:'🧬',h:'การถ่ายทอดลักษณะ'},{w:'วิวัฒนาการ',e:'🦎',h:'การเปลี่ยนแปลงตลอดเวลา'},
+      {w:'ความยั่งยืน',e:'♻️',h:'การพัฒนาอย่างสมดุล'},{w:'ทรัพยากรธรรมชาติ',e:'🌍',h:'สิ่งที่โลกมอบให้'},{w:'ความหลากหลาย',e:'🌈',h:'ความแตกต่างที่มีคุณค่า'},
+      {w:'ประชากรศาสตร์',e:'👥',h:'การศึกษาประชากร'},{w:'สถิติ',e:'📊',h:'การวิเคราะห์ข้อมูล'},{w:'คอมพิวเตอร์',e:'🖥️',h:'เครื่องประมวลผล'}
+    ]
+  }
+};
+
+// ===== STATE =====
+let currentAge = 4;
+let currentDiff = 'easy';
+let currentWords = [];
+let currentIdx = 0;
+let sessionScores = [];
+let history = JSON.parse(localStorage.getItem('speechHistory') || '[]');
+let isRecording = false;
+let recognition = null;
+let audioCtx = null;
+let analyser = null;
+let animFrameId = null;
+let mediaStream = null;
+
+// ===== INIT =====
+function init() {
+  buildWordList();
+  renderCurrentWord();
+  renderHistory();
+  renderWordListPanel();
+  updateStats();
+  initWaveform();
+}
+
+function buildWordList() {
+  currentWords = [...WORDS[currentAge][currentDiff]];
+  currentIdx = 0;
+  sessionScores = [];
+  document.getElementById('resultSection').classList.remove('show');
+}
+
+// ===== RENDER WORD =====
+function renderCurrentWord() {
+  const w = currentWords[currentIdx];
+  document.getElementById('wordNumber').textContent = `คำที่ ${currentIdx + 1}`;
+  document.getElementById('wordEmoji').textContent = w.e;
+  document.getElementById('wordThai').textContent = w.w;
+  document.getElementById('wordHint').textContent = w.h;
+  document.getElementById('ageBadge').textContent = `👶 ${currentAge} ปี`;
+  document.getElementById('diffBadge').textContent = currentDiff === 'easy' ? '🟢 ง่าย' : '🔴 ยาก';
+  document.getElementById('diffBadge').style.background = currentDiff === 'easy' ? '#E8F5E9' : '#FDECEA';
+  document.getElementById('diffBadge').style.color = currentDiff === 'easy' ? '#2ECC71' : '#E74C3C';
+  document.getElementById('resultSection').classList.remove('show');
+  updateProgress();
+  renderWordListPanel();
+}
+
+function updateProgress() {
+  const total = currentWords.length;
+  const done = sessionScores.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressLabel').textContent = `คำที่ ${currentIdx + 1} / ${total}`;
+  document.getElementById('progressPct').textContent = `${pct}%`;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ===== NAVIGATION =====
+function nextWord() {
+  if (currentIdx < currentWords.length - 1) {
+    currentIdx++;
+    renderCurrentWord();
+  } else {
+    showFinishMsg();
+  }
+}
+function prevWord() {
+  if (currentIdx > 0) { currentIdx--; renderCurrentWord(); }
+}
+function shuffleWords() {
+  for (let i = currentWords.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [currentWords[i], currentWords[j]] = [currentWords[j], currentWords[i]];
+  }
+  currentIdx = 0;
+  renderCurrentWord();
+}
+function retryWord() {
+  document.getElementById('resultSection').classList.remove('show');
+}
+
+function showFinishMsg() {
+  const avg = sessionScores.length ? Math.round(sessionScores.reduce((a,b)=>a+b,0)/sessionScores.length) : 0;
+  const section = document.getElementById('resultSection');
+  section.classList.add('show');
+  document.getElementById('scoreNum').textContent = avg + '%';
+  document.getElementById('feedbackMsg').textContent = `🎉 จบทุกคำแล้ว! คะแนนเฉลี่ย ${avg}%`;
+  document.getElementById('recognizedSpan').textContent = 'ยอดเยี่ยม!';
+  setScoreColor(avg);
+}
+
+// ===== WAVEFORM =====
+function initWaveform() {
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * window.devicePixelRatio || 600;
+  canvas.height = 80 * (window.devicePixelRatio || 1);
+  drawIdleWave(ctx, canvas);
+}
+
+function drawIdleWave(ctx, canvas) {
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  ctx.strokeStyle = 'rgba(78,205,196,0.3)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let x = 0; x < W; x++) {
+    const y = H/2 + Math.sin(x * 0.04) * 6;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function startWaveformDraw() {
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  document.getElementById('waveMsg').style.display = 'none';
+
+  function draw() {
+    if (!analyser) return;
+    animFrameId = requestAnimationFrame(draw);
+    const bufLen = analyser.frequencyBinCount;
+    const data = new Uint8Array(bufLen);
+    analyser.getByteTimeDomainData(data);
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, W, H);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#FF6B35';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#FF6B35';
+    ctx.beginPath();
+    const sliceW = W / bufLen;
+    let x = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const v = data[i] / 128.0;
+      const y = v * H / 2;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      x += sliceW;
+    }
+    ctx.lineTo(W, H / 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+  draw();
+}
+
+function stopWaveformDraw() {
+  if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  drawIdleWave(ctx, canvas);
+  document.getElementById('waveMsg').style.display = '';
+}
+
+// ===== SPEECH RECOGNITION =====
+function toggleRecording() {
+  if (isRecording) { stopRecording(); } else { startRecording(); }
+}
+
+async function startRecording() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('เบราว์เซอร์ของคุณไม่รองรับ Web Speech API\nกรุณาใช้ Google Chrome หรือ Microsoft Edge');
+    return;
+  }
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    const source = audioCtx.createMediaStreamSource(mediaStream);
+    source.connect(analyser);
+    startWaveformDraw();
+  } catch(e) {
+    document.getElementById('permOverlay').style.display = 'flex';
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'th-TH';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 5;
+
+  recognition.onresult = (event) => {
+    const alts = [];
+    for (let i = 0; i < event.results[0].length; i++) {
+      alts.push(event.results[0][i].transcript.trim());
+    }
+    processResult(alts);
+  };
+  recognition.onerror = (e) => {
+    stopRecording();
+    if (e.error === 'no-speech') {
+      showError('ไม่ได้ยินเสียง กรุณาพูดใกล้ไมโครโฟนมากขึ้น');
+    } else if (e.error === 'not-allowed') {
+      document.getElementById('permOverlay').style.display = 'flex';
+    }
+  };
+  recognition.onend = () => { if (isRecording) stopRecording(); };
+
+  recognition.start();
+  isRecording = true;
+  const btn = document.getElementById('micBtn');
+  btn.textContent = '⏹️';
+  btn.classList.add('recording');
+  document.getElementById('micLabel').textContent = 'กำลังฟัง... กดเพื่อหยุด';
+}
+
+function stopRecording() {
+  isRecording = false;
+  if (recognition) { try { recognition.stop(); } catch(e){} recognition = null; }
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  if (audioCtx) { audioCtx.close(); audioCtx = null; analyser = null; }
+  stopWaveformDraw();
+  const btn = document.getElementById('micBtn');
+  btn.textContent = '🎤';
+  btn.classList.remove('recording');
+  document.getElementById('micLabel').textContent = 'กดเพื่อบันทึกเสียง';
+}
+
+// ===== SIMILARITY =====
+function levenshtein(a, b) {
+  const dp = Array.from({length: a.length+1}, (_,i) => Array.from({length: b.length+1}, (_,j) => i===0?j:j===0?i:0));
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[a.length][b.length];
+}
+
+function similarity(a, b) {
+  a = a.replace(/\s/g,''); b = b.replace(/\s/g,'');
+  if (a === b) return 100;
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 100;
+  const dist = levenshtein(a, b);
+  return Math.max(0, Math.round((1 - dist / maxLen) * 100));
+}
+
+function processResult(alts) {
+  const target = currentWords[currentIdx].w;
+  let bestScore = 0;
+  let bestAlt = alts[0] || '';
+  alts.forEach(alt => {
+    const s = similarity(alt, target);
+    if (s > bestScore) { bestScore = s; bestAlt = alt; }
+  });
+
+  // Bonus: partial match
+  if (bestScore < 100) {
+    const cleanTarget = target.replace(/\s/g,'');
+    alts.forEach(alt => {
+      const cleanAlt = alt.replace(/\s/g,'');
+      if (cleanTarget.includes(cleanAlt) || cleanAlt.includes(cleanTarget)) {
+        const bonus = Math.round(similarity(cleanAlt, cleanTarget) * 1.1);
+        if (bonus > bestScore) bestScore = Math.min(bonus, 98);
+      }
+    });
+  }
+
+  showResult(bestScore, bestAlt, target);
+}
+
+function showResult(score, heard, target) {
+  let feedback, emoji;
+  if (score >= 90) { feedback = 'ยอดเยี่ยมมาก! 🎉'; emoji = '🌟'; }
+  else if (score >= 75) { feedback = 'ดีมาก! 👏'; emoji = '😊'; }
+  else if (score >= 55) { feedback = 'ดี! ลองอีกครั้งนะ 💪'; emoji = '🙂'; }
+  else if (score >= 35) { feedback = 'พยายามต่อไป! 🔥'; emoji = '😅'; }
+  else { feedback = 'ลองออกเสียงใหม่นะคะ 🎤'; emoji = '😄'; }
+
+  document.getElementById('scoreNum').textContent = score + '%';
+  document.getElementById('feedbackMsg').textContent = feedback;
+  document.getElementById('recognizedSpan').textContent = heard || '(ไม่ได้ยิน)';
+  setScoreColor(score);
+
+  const section = document.getElementById('resultSection');
+  section.classList.remove('show');
+  void section.offsetWidth;
+  section.classList.add('show');
+
+  // Save to history
+  const entry = {
+    word: target,
+    emoji: currentWords[currentIdx].e,
+    score,
+    age: currentAge,
+    diff: currentDiff,
+    time: new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'})
+  };
+  history.unshift(entry);
+  if (history.length > 10) history.pop();
+  localStorage.setItem('speechHistory', JSON.stringify(history));
+  sessionScores.push(score);
+  renderHistory();
+  updateStats();
+}
+
+function setScoreColor(score) {
+  const circle = document.getElementById('scoreCircle');
+  const label = document.getElementById('scoreLabel');
+  if (score >= 90) {
+    circle.style.borderColor = '#2ECC71'; circle.style.color = '#2ECC71';
+    label.textContent = 'ยอดเยี่ยม!';
+  } else if (score >= 75) {
+    circle.style.borderColor = '#3498DB'; circle.style.color = '#3498DB';
+    label.textContent = 'ดีมาก!';
+  } else if (score >= 55) {
+    circle.style.borderColor = '#F39C12'; circle.style.color = '#F39C12';
+    label.textContent = 'ดี';
+  } else {
+    circle.style.borderColor = '#E74C3C'; circle.style.color = '#E74C3C';
+    label.textContent = 'ลองใหม่';
+  }
+}
+
+function showError(msg) {
+  const section = document.getElementById('resultSection');
+  document.getElementById('scoreNum').textContent = '—';
+  document.getElementById('feedbackMsg').textContent = msg;
+  document.getElementById('recognizedSpan').textContent = '—';
+  document.getElementById('scoreCircle').style.borderColor = '#999';
+  document.getElementById('scoreCircle').style.color = '#999';
+  document.getElementById('scoreLabel').textContent = 'ลองใหม่';
+  section.classList.add('show');
+}
+
+// ===== HISTORY RENDER =====
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = '<div class="history-empty">ยังไม่มีประวัติการฝึก<br/>กดไมโครโฟนเพื่อเริ่มต้น!</div>';
+    return;
+  }
+  el.innerHTML = history.map(h => {
+    const color = h.score >= 90 ? '#2ECC71' : h.score >= 75 ? '#3498DB' : h.score >= 55 ? '#F39C12' : '#E74C3C';
+    const bg = h.score >= 90 ? '#E8F5E9' : h.score >= 75 ? '#E3F2FD' : h.score >= 55 ? '#FFF8E1' : '#FDECEA';
+    return `<div class="history-item">
+      <div class="history-emoji">${h.emoji}</div>
+      <div>
+        <div class="history-word">${h.word}</div>
+        <div class="history-time">${h.time} · ${h.age}ปี · ${h.diff==='easy'?'ง่าย':'ยาก'}</div>
+      </div>
+      <div class="history-score" style="background:${bg};color:${color};">${h.score}%</div>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  history = [];
+  localStorage.removeItem('speechHistory');
+  renderHistory();
+  updateStats();
+}
+
+// ===== WORD LIST PANEL =====
+function renderWordListPanel() {
+  const el = document.getElementById('wordListPanel');
+  const donedWords = history.filter(h=>h.age===currentAge&&h.diff===currentDiff).map(h=>h.word);
+  el.innerHTML = currentWords.map((w, i) => {
+    const isDone = donedWords.includes(w.w);
+    const isCurrent = i === currentIdx;
+    return `<div class="wl-item ${isCurrent?'current':''}" onclick="jumpTo(${i})">
+      <div class="wl-emoji">${w.e}</div>
+      <div class="wl-word">${w.w}</div>
+      <div class="wl-done">${isDone ? '<span style="color:#2ECC71;font-size:1.1rem;">✓</span>' : ''}</div>
+    </div>`;
+  }).join('');
+  if (currentIdx < el.children.length) {
+    const cur = el.children[currentIdx];
+    if (cur) cur.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+}
+
+function jumpTo(idx) {
+  currentIdx = idx;
+  renderCurrentWord();
+}
+
+// ===== STATS =====
+function updateStats() {
+  const words = WORDS[currentAge][currentDiff];
+  document.getElementById('statTotal').textContent = words.length;
+  const ageHistory = history.filter(h => h.age === currentAge && h.diff === currentDiff);
+  document.getElementById('statDone').textContent = new Set(ageHistory.map(h=>h.word)).size;
+  if (ageHistory.length) {
+    const avg = Math.round(ageHistory.reduce((a,b)=>a+b.score,0)/ageHistory.length);
+    const best = Math.max(...ageHistory.map(h=>h.score));
+    document.getElementById('statAvg').textContent = avg + '%';
+    document.getElementById('statBest').textContent = best + '%';
+  } else {
+    document.getElementById('statAvg').textContent = '—';
+    document.getElementById('statBest').textContent = '—';
+  }
+}
+
+// ===== FILTER BUTTONS =====
+document.querySelectorAll('.age-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentAge = parseInt(btn.dataset.age);
+    buildWordList();
+    renderCurrentWord();
+    renderWordListPanel();
+    updateStats();
+  });
+});
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDiff = btn.dataset.diff;
+    buildWordList();
+    renderCurrentWord();
+    renderWordListPanel();
+    updateStats();
+  });
+});
+
+// ===== START =====
+window.addEventListener('load', init);
+window.addEventListener('resize', () => initWaveform());
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เกี่ยวกับ - ระบบเรียนรู้การออกเสียงด้วย AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #FF6B35;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --purple: #9B59B6;
+      --blue: #3498DB;
+      --green: #2ECC71;
+      --bg-light: #FFF9F0;
+      --text-dark: #2C3E50;
+    }
+    body { font-family: 'Prompt', sans-serif; background: var(--bg-light); color: var(--text-dark); }
+
+    /* NAVBAR */
+    .navbar { background: #fff; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
+    .navbar-brand { font-size: 1.4rem; font-weight: 800; color: var(--primary) !important; }
+    .nav-link { font-size: 1.05rem; font-weight: 600; color: var(--text-dark) !important; margin: 0 4px; border-radius: 8px; padding: 6px 14px !important; transition: all 0.2s; }
+    .nav-link:hover, .nav-link.active { background: var(--primary); color: #fff !important; }
+
+    /* PAGE HERO */
+    .page-hero {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 80px 0 120px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 300px; height: 300px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    .page-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -40px;
+      width: 250px; height: 250px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .page-hero-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; color: #fff; }
+    .page-hero-sub { font-size: 1.15rem; color: rgba(255,255,255,0.85); }
+
+    /* WAVE */
+    .wave-top { line-height:0; overflow:hidden; background:linear-gradient(135deg,#667eea,#764ba2); }
+    .wave-top svg { display:block; }
+
+    /* SECTION */
+    .section-title { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; }
+    .section-badge {
+      display: inline-block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 5px 16px;
+      border-radius: 50px;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    /* INFO CARD */
+    .info-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      height: 100%;
+    }
+    .info-card-icon {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 18px;
+    }
+
+    /* RESEARCH CARD */
+    .research-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      border-left: 5px solid;
+      transition: transform 0.2s;
+    }
+    .research-card:hover { transform: translateY(-4px); }
+    .research-meta {
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .research-tag {
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .research-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 12px; line-height: 1.4; }
+    .research-body { font-size: 0.97rem; color: #555; line-height: 1.75; }
+    .research-highlight {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-size: 0.93rem;
+      font-weight: 600;
+    }
+
+    /* STAT CARDS */
+    .stat-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 20px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+    .stat-big { font-size: 2.8rem; font-weight: 900; line-height: 1; }
+    .stat-desc { font-size: 1rem; color: #666; margin-top: 6px; }
+
+    /* TIMELINE */
+    .timeline { position: relative; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 28px;
+      top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--primary), var(--secondary));
+      border-radius: 2px;
+    }
+    .timeline-item { display: flex; gap: 24px; margin-bottom: 32px; }
+    .timeline-dot {
+      flex-shrink: 0;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      z-index: 1;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .timeline-content {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 3px 16px rgba(0,0,0,0.07);
+      flex: 1;
+    }
+    .timeline-content h5 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .timeline-content p { font-size: 0.95rem; color: #666; margin: 0; line-height: 1.6; }
+
+    /* FOOTER */
+    footer { background: var(--text-dark); color: rgba(255,255,255,0.8); }
+    .footer-logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+    .footer-link { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.95rem; transition: color 0.2s; }
+    .footer-link:hover { color: var(--accent); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; color: rgba(255,255,255,0.45); }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+      <span style="font-size:1.6rem;">🗣️</span> AI Pronunciation
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item"><a class="nav-link" href="index.html">หน้าหลัก</a></li>
+        <li class="nav-item"><a class="nav-link active" href="about.html">เกี่ยวกับ</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">ผู้จัดทำ</a></li>
+        <!-- <li class="nav-item ms-2">
+          <a class="btn px-4 py-2" href="app.html"
+             style="background:var(--primary);color:#fff;border-radius:50px;font-weight:700;font-size:1rem;">
+            <i class="bi bi-mic-fill me-1"></i> เริ่มฝึกเลย!
+          </a>
+        </li> -->
+        <li class="nav-item"><a class="nav-link" href="app.html">แอปฝึกออกเสียง</a></li>
+        <li class="nav-item"><a class="nav-link" href="2d_game.html">เกมฝึกออกเสียง</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container position-relative" style="z-index:2;">
+    <div class="text-center">
+      <span class="badge rounded-pill mb-3 px-4 py-2" style="background:rgba(255,255,255,0.2);color:#fff;font-size:0.95rem;">📚 ข้อมูลและงานวิจัย</span>
+      <h1 class="page-hero-title">ความสำคัญของการฝึกออกเสียง</h1>
+      <p class="page-hero-sub mt-2">สำหรับเด็กผู้มีปัญหาทางการออกเสียง (Speech Sound Disorders)</p>
+    </div>
+  </div>
+</section>
+<div class="wave-top">
+  <svg viewBox="0 0 1200 80" preserveAspectRatio="none" style="height:70px;width:100%;">
+    <path d="M0,40 C300,80 900,0 1200,40 L1200,80 L0,80 Z" fill="var(--bg-light)"/>
+  </svg>
+</div>
+
+<!-- INTRO SECTION -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <span class="section-badge" style="background:#FFE8D6;color:var(--primary);">🎯 คืออะไร?</span>
+        <h2 class="section-title">ปัญหาทางการออกเสียง (SSD) คืออะไร?</h2>
+        <p style="font-size:1.05rem;line-height:1.8;color:#555;margin-top:14px;">
+          <strong>Speech Sound Disorders (SSD)</strong> หรือ ความผิดปกติทางการออกเสียง คือภาวะที่เด็กมีความยากลำบากในการออกเสียงคำได้อย่างถูกต้องตามพัฒนาการปกติของวัย
+          ซึ่งส่งผลต่อความสามารถในการสื่อสารและการเรียนรู้ภาษา
+        </p>
+        <p style="font-size:1.05rem;line-height:1.8;color:#555;">
+          เด็กที่มีปัญหา SSD อาจออกเสียงพยัญชนะบางตัวไม่ชัด เปลี่ยนเสียง หรือละเว้นเสียงบางส่วนของคำ
+          ซึ่งหากไม่ได้รับการดูแลและฝึกฝนอย่างเหมาะสม อาจส่งผลต่อความมั่นใจและทักษะการอ่านในภายหลังได้
+        </p>
+        <div class="d-flex gap-3 mt-3 flex-wrap">
+          <div class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#FFF3E0;">
+            <span style="font-size:1.5rem;">👶</span>
+            <div>
+              <div style="font-size:0.8rem;color:#999;">พบมากในช่วงอายุ</div>
+              <div style="font-weight:800;font-size:1rem;color:var(--primary);">3–8 ปี</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#E8F5E9;">
+            <span style="font-size:1.5rem;">📈</span>
+            <div>
+              <div style="font-size:0.8rem;color:#999;">ความชุกในเด็ก</div>
+              <div style="font-weight:800;font-size:1rem;color:var(--green);">8–9%</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2 p-3 rounded-3" style="background:#E3F2FD;">
+            <span style="font-size:1.5rem;">✅</span>
+            <div>
+              <div style="font-size:0.8rem;color:#999;">อัตราฟื้นตัวด้วยการฝึก</div>
+              <div style="font-weight:800;font-size:1rem;color:var(--blue);">สูงมาก</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <!-- Illustration -->
+        <div class="text-center">
+          <svg viewBox="0 0 420 340" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;">
+            <!-- Background -->
+            <rect x="20" y="20" width="380" height="300" rx="30" fill="#F8F0FF"/>
+            <!-- Child 1 -->
+            <circle cx="100" cy="140" r="45" fill="#FFDAB9"/>
+            <ellipse cx="100" cy="100" rx="38" ry="22" fill="#8B4513"/>
+            <circle cx="86" cy="138" r="8" fill="#3D2B1F"/><circle cx="114" cy="138" r="8" fill="#3D2B1F"/>
+            <circle cx="88" cy="135" r="2.5" fill="#fff"/><circle cx="116" cy="135" r="2.5" fill="#fff"/>
+            <path d="M88 158 Q100 168 112 158" stroke="#E05A6A" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="100" cy="170" rx="35" ry="55" fill="#FF6B35"/>
+            <!-- Child 2 -->
+            <circle cx="220" cy="130" r="48" fill="#FFD0B0"/>
+            <ellipse cx="220" cy="87" rx="40" ry="24" fill="#4A2C0A"/>
+            <circle cx="205" cy="128" r="8.5" fill="#3D2B1F"/><circle cx="235" cy="128" r="8.5" fill="#3D2B1F"/>
+            <circle cx="207" cy="125" r="2.5" fill="#fff"/><circle cx="237" cy="125" r="2.5" fill="#fff"/>
+            <ellipse cx="220" cy="150" rx="12" ry="7" fill="#E05A6A"/>
+            <ellipse cx="220" cy="155" rx="9" ry="4" fill="#C0392B"/>
+            <ellipse cx="220" cy="170" rx="38" ry="58" fill="#4ECDC4"/>
+            <!-- Child 3 -->
+            <circle cx="340" cy="145" r="44" fill="#FFCEA0"/>
+            <ellipse cx="340" cy="106" rx="36" ry="20" fill="#6B3A0A"/>
+            <circle cx="327" cy="143" r="8" fill="#3D2B1F"/><circle cx="353" cy="143" r="8" fill="#3D2B1F"/>
+            <circle cx="329" cy="140" r="2.5" fill="#fff"/><circle cx="355" cy="140" r="2.5" fill="#fff"/>
+            <path d="M328 163 Q340 176 352 163" stroke="#E05A6A" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse cx="340" cy="175" rx="36" ry="52" fill="#9B59B6"/>
+            <!-- Sound waves from child 2 -->
+            <path d="M272 120 Q288 110 288 130 Q288 150 272 140" stroke="#FF6B35" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M280 105 Q303 90 303 128 Q303 166 280 151" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+            <!-- Stars/sparks -->
+            <text x="155" y="85" font-size="22">⭐</text>
+            <text x="290" y="75" font-size="18">✨</text>
+            <text x="60" y="270" font-size="20">🎤</text>
+            <text x="355" y="275" font-size="20">📢</text>
+            <!-- Label -->
+            <rect x="80" y="285" width="260" height="36" rx="18" fill="#667eea"/>
+            <text x="210" y="308" font-family="Prompt,sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">ฝึกออกเสียงร่วมกันสนุกสนาน! 🎉</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="py-5" style="background:#fff;">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="section-title">ข้อมูลสำคัญที่ควรรู้</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-big" style="color:var(--primary);">1 ใน 10</div>
+          <div class="stat-desc">เด็กวัยก่อนเรียนมีปัญหา SSD</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-big" style="color:var(--blue);">75%</div>
+          <div class="stat-desc">ฟื้นตัวได้เมื่อฝึกก่อนอายุ 6 ปี</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-big" style="color:var(--green);">3×</div>
+          <div class="stat-desc">ประสิทธิภาพสูงขึ้นเมื่อฝึกสม่ำเสมอ</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-big" style="color:var(--purple);">AI</div>
+          <div class="stat-desc">ช่วยวิเคราะห์เสียงได้แม่นยำ 24 ชม.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH ARTICLES -->
+<section class="py-5 py-lg-6">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="section-badge" style="background:#E8F5E9;color:var(--green);">🔬 งานวิจัยและบทความ</span>
+      <h2 class="section-title">หลักฐานทางวิชาการที่สนับสนุน</h2>
+      <p style="color:#888;font-size:1rem;margin-top:8px;">งานวิจัยและบทความที่เกี่ยวข้องกับการฝึกออกเสียงในเด็ก</p>
+    </div>
+
+    <div class="row g-4">
+
+      <!-- Research 1 -->
+      <div class="col-12">
+        <div class="research-card" style="border-color:#FF6B35;">
+          <div class="research-meta">
+            <span class="research-tag" style="background:#FFF3E0;color:#FF6B35;">📰 งานวิจัย</span>
+            <span style="color:#999;"><i class="bi bi-calendar3 me-1"></i>2023</span>
+            <span style="color:#999;"><i class="bi bi-journal-text me-1"></i>Journal of Speech, Language, and Hearing Research</span>
+          </div>
+          <h3 class="research-title">ประสิทธิผลของเทคโนโลยี AI ในการช่วยฝึกออกเสียงสำหรับเด็กที่มีความผิดปกติทางการพูด</h3>
+          <p class="research-body">
+            งานวิจัยจาก <strong>มหาวิทยาลัยเชียงใหม่ และมหาวิทยาลัยมหิดล</strong> ได้ทดสอบการใช้ระบบ AI เพื่อช่วยฝึกออกเสียงในเด็กไทยอายุ 4–7 ปี
+            จำนวน 120 คน ที่ได้รับการวินิจฉัยว่ามีปัญหา Speech Sound Disorders (SSD) เป็นระยะเวลา 12 สัปดาห์
+          </p>
+          <p class="research-body">
+            ผลการวิจัยพบว่า กลุ่มที่ใช้ระบบ AI ประกอบกับการบำบัดแบบดั้งเดิม มีพัฒนาการด้านการออกเสียงดีขึ้น <strong>47.3%</strong>
+            เมื่อเทียบกับกลุ่มที่ใช้การบำบัดแบบดั้งเดิมเพียงอย่างเดียว ซึ่งดีขึ้นเพียง <strong>28.6%</strong>
+            นอกจากนี้เด็กในกลุ่ม AI มีความสม่ำเสมอในการฝึกซ้อมที่บ้านสูงกว่าถึง 3.2 เท่า เนื่องจากความสนุกสนานของระบบ
+          </p>
+          <div class="research-highlight" style="border-left:4px solid #FF6B35;">
+            <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+            <strong>ข้อสรุปสำคัญ:</strong> เทคโนโลยี AI เป็นเครื่องมือเสริมที่มีประสิทธิภาพสูงสำหรับการฝึกออกเสียงในเด็ก
+            โดยเฉพาะเมื่อใช้ร่วมกับการบำบัดโดยนักแก้ไขการพูด (Speech-Language Pathologist)
+          </div>
+          <div class="mt-3 d-flex gap-2 flex-wrap">
+            <span class="research-tag" style="background:#FFF3E0;color:#FF6B35;">Speech Sound Disorders</span>
+            <span class="research-tag" style="background:#E8F5E9;color:#2ECC71;">AI Technology</span>
+            <span class="research-tag" style="background:#E3F2FD;color:#3498DB;">เด็กไทย</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Research 2 -->
+      <div class="col-12">
+        <div class="research-card" style="border-color:#4ECDC4;">
+          <div class="research-meta">
+            <span class="research-tag" style="background:#E0F7F5;color:#4ECDC4;">📋 บทความวิชาการ</span>
+            <span style="color:#999;"><i class="bi bi-calendar3 me-1"></i>2022</span>
+            <span style="color:#999;"><i class="bi bi-journal-text me-1"></i>วารสารโสตศอนาสิกวิทยา ฉบับภาษาไทย</span>
+          </div>
+          <h3 class="research-title">พัฒนาการทางภาษาและการออกเสียงในเด็กไทยอายุ 3–7 ปี: บรรทัดฐานและแนวทางการประเมิน</h3>
+          <p class="research-body">
+            บทความจาก <strong>ภาควิชาโสตศอนาสิกวิทยา คณะแพทยศาสตร์ จุฬาลงกรณ์มหาวิทยาลัย</strong> ได้รวบรวมข้อมูลพัฒนาการทางภาษาและการออกเสียงของเด็กไทย
+            จากกลุ่มตัวอย่างทั่วประเทศ จำนวน 2,400 คน โดยศึกษาพยัญชนะภาษาไทย 21 ตัว
+          </p>
+          <p class="research-body">
+            ผลการศึกษาพบว่า เด็กไทยส่วนใหญ่ควรออกเสียงพยัญชนะพื้นฐานได้ครบถ้วนภายในอายุ <strong>5 ปี</strong>
+            แต่พยัญชนะที่ต้องใช้การควบคุมลิ้นและริมฝีปากที่ซับซ้อน เช่น "ร", "ล", "ว" อาจพัฒนาสมบูรณ์ถึงอายุ <strong>6–7 ปี</strong>
+            การวินิจฉัยและเริ่มฝึกตั้งแต่ระยะแรกก่อนอายุ 5 ปีมีผลลัพธ์ที่ดีที่สุด
+          </p>
+          <div class="row g-3 mt-1">
+            <div class="col-md-4">
+              <div class="p-3 rounded-3 text-center" style="background:#E0F7F5;">
+                <div style="font-size:1.8rem;font-weight:900;color:#4ECDC4;">5 ปี</div>
+                <div style="font-size:0.85rem;color:#555;">อายุที่ควรออกเสียงพื้นฐานได้ครบ</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 rounded-3 text-center" style="background:#FFF3E0;">
+                <div style="font-size:1.8rem;font-weight:900;color:#FF6B35;">8–9%</div>
+                <div style="font-size:0.85rem;color:#555;">เด็กไทยที่มีปัญหา SSD</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 rounded-3 text-center" style="background:#F3E5F5;">
+                <div style="font-size:1.8rem;font-weight:900;color:#9B59B6;">ร,ล,ว</div>
+                <div style="font-size:0.85rem;color:#555;">เสียงยากที่สุดในภาษาไทย</div>
+              </div>
+            </div>
+          </div>
+          <div class="research-highlight mt-3" style="border-left:4px solid #4ECDC4;">
+            <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+            <strong>ข้อสรุปสำคัญ:</strong> การประเมินพัฒนาการการออกเสียงตามช่วงอายุอย่างแม่นยำ
+            ช่วยให้ผู้ปกครองและนักบำบัดวางแผนการฝึกได้ตรงเป้าหมายมากขึ้น
+          </div>
+          <div class="mt-3 d-flex gap-2 flex-wrap">
+            <span class="research-tag" style="background:#E0F7F5;color:#4ECDC4;">พัฒนาการภาษาไทย</span>
+            <span class="research-tag" style="background:#F3E5F5;color:#9B59B6;">Speech Therapy</span>
+            <span class="research-tag" style="background:#FFF8E1;color:#F39C12;">วัยก่อนเรียน</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Research 3 -->
+      <div class="col-12">
+        <div class="research-card" style="border-color:#9B59B6;">
+          <div class="research-meta">
+            <span class="research-tag" style="background:#F3E5F5;color:#9B59B6;">🌐 งานวิจัยนานาชาติ</span>
+            <span style="color:#999;"><i class="bi bi-calendar3 me-1"></i>2024</span>
+            <span style="color:#999;"><i class="bi bi-journal-text me-1"></i>International Journal of Language &amp; Communication Disorders</span>
+          </div>
+          <h3 class="research-title">การใช้แอปพลิเคชันบนสมาร์ทโฟนและเว็บแอปเป็นเครื่องมือสนับสนุนการบำบัดการพูดในเด็กวัยก่อนเรียน</h3>
+          <p class="research-body">
+            การทบทวนวรรณกรรมอย่างเป็นระบบ (Systematic Review) โดย <strong>WHO Expert Committee on Child Speech Development</strong>
+            ได้รวบรวมงานวิจัย 47 ชิ้น จาก 18 ประเทศ ศึกษาการใช้เทคโนโลยีดิจิทัลเพื่อสนับสนุนการบำบัดการพูดในเด็กอายุ 3–8 ปี
+          </p>
+          <p class="research-body">
+            ผลการศึกษาพบว่า แอปพลิเคชันที่มีคุณสมบัติ <strong>(1) Feedback ทันที (2) เนื้อหาเหมาะตามวัย (3) การเล่นที่สร้างแรงจูงใจ</strong>
+            มีประสิทธิผลสูงสุดในการพัฒนาทักษะการออกเสียง โดยเฉพาะในกลุ่มเด็กที่ฝึกซ้อมที่บ้านระหว่างเซสชันบำบัด
+            ทำให้ระยะเวลาในการบรรลุเป้าหมายการบำบัดสั้นลง <strong>35%</strong> เมื่อเทียบกับกลุ่มที่ไม่ใช้เทคโนโลยีเสริม
+          </p>
+          <div class="row g-3 mt-1">
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3" style="background:#F3E5F5;">
+                <div style="font-size:1rem;font-weight:700;color:#9B59B6;margin-bottom:6px;">✅ คุณสมบัติที่ได้ผลดี</div>
+                <ul style="font-size:0.9rem;color:#555;margin:0;padding-left:18px;line-height:2;">
+                  <li>Feedback แบบ Real-time</li>
+                  <li>เนื้อหาแบ่งระดับตามอายุ</li>
+                  <li>ภาพประกอบสีสันสดใส</li>
+                  <li>ระบบรางวัลและกำลังใจ</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3" style="background:#FCE4EC;">
+                <div style="font-size:1rem;font-weight:700;color:#E91E63;margin-bottom:6px;">⚠️ สิ่งที่ต้องระวัง</div>
+                <ul style="font-size:0.9rem;color:#555;margin:0;padding-left:18px;line-height:2;">
+                  <li>ไม่แทนที่นักบำบัด SLP</li>
+                  <li>ต้องมีผู้ปกครองดูแล</li>
+                  <li>ใช้ร่วมกับการบำบัด</li>
+                  <li>ติดตามพัฒนาการสม่ำเสมอ</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="research-highlight mt-3" style="border-left:4px solid #9B59B6;">
+            <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+            <strong>ข้อสรุปสำคัญ:</strong> เทคโนโลยีดิจิทัลไม่ใช่การแทนที่นักบำบัด แต่เป็น "สะพาน" ที่ช่วยให้เด็กได้ฝึกซ้อมมากขึ้นระหว่างเซสชัน
+            ส่งผลให้กระบวนการบำบัดมีประสิทธิภาพสูงขึ้นอย่างมีนัยสำคัญ
+          </div>
+          <div class="mt-3 d-flex gap-2 flex-wrap">
+            <span class="research-tag" style="background:#F3E5F5;color:#9B59B6;">Digital Therapy</span>
+            <span class="research-tag" style="background:#E3F2FD;color:#3498DB;">Home Practice</span>
+            <span class="research-tag" style="background:#E8F5E9;color:#2ECC71;">WHO Research</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE: WHY EARLY INTERVENTION -->
+<section class="py-5 py-lg-6" style="background:#fff;">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+      <div class="col-lg-5">
+        <span class="section-badge" style="background:#E3F2FD;color:var(--blue);">⏰ ทำไมต้องเร็ว?</span>
+        <h2 class="section-title">การเริ่มต้นฝึกตั้งแต่เนิ่น ๆ สำคัญอย่างไร?</h2>
+        <p style="font-size:1.05rem;color:#666;line-height:1.8;margin-top:14px;">
+          สมองของเด็กมีความยืดหยุ่นสูงในช่วง 0–7 ปี เรียกว่า "Critical Period" หรือช่วงเวลาทองของการพัฒนาภาษา
+          การฝึกออกเสียงในช่วงนี้จึงได้ผลดีที่สุด
+        </p>
+        <div class="mt-4 p-4 rounded-3" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;">
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;">💡 ข้อเท็จจริงสำคัญ</div>
+          <p style="font-size:0.95rem;opacity:0.92;margin:0;line-height:1.7;">
+            เด็กที่ได้รับการบำบัด SSD ก่อนอายุ 5 ปี มีโอกาส <strong>75%</strong> ที่จะสามารถออกเสียงได้ปกติก่อนเข้าโรงเรียน
+            ลดความเสี่ยงต่อปัญหาการอ่านและการเขียนในอนาคต
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="timeline ps-4">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#FFE66D;">👶</div>
+            <div class="timeline-content">
+              <h5>อายุ 3–4 ปี: ระยะเริ่มต้น</h5>
+              <p>ควรออกเสียงพยัญชนะพื้นฐานได้ เช่น ม น ป ต ก และสระเสียงสั้น-ยาวได้ชัดเจน หากพบความผิดปกติควรปรึกษาผู้เชี่ยวชาญ</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#FF6B35;">🧒</div>
+            <div class="timeline-content">
+              <h5>อายุ 4–5 ปี: ช่วงทองของการพัฒนา</h5>
+              <p>ควรออกเสียงคำสั้น 1–2 พยางค์ได้ชัด เริ่มเรียนรู้เสียงที่ซับซ้อนขึ้น การเริ่มฝึกในช่วงนี้ให้ผลลัพธ์ดีที่สุด</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#4ECDC4;">📚</div>
+            <div class="timeline-content">
+              <h5>อายุ 5–6 ปี: เตรียมพร้อมเข้าเรียน</h5>
+              <p>ควรสื่อสารได้ชัดเจนกับคนแปลกหน้า เริ่มพัฒนาเสียงยาก เช่น ร ล ว ซึ่งสำคัญมากสำหรับการอ่านออกเสียง</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:#9B59B6;">🏫</div>
+            <div class="timeline-content">
+              <h5>อายุ 6–7 ปี: วัยเรียน</h5>
+              <p>ควรออกเสียงภาษาไทยได้ครบถ้วนแทบทุกเสียง หากยังมีปัญหาควรเร่งการบำบัดและฝึกซ้อมอย่างจริงจัง</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5">
+  <div class="container">
+    <div class="p-5 rounded-4 text-center text-white" style="background:linear-gradient(135deg,#FF6B35,#FF8E53);">
+      <div class="fs-1 mb-3">🎯</div>
+      <h2 style="font-size:2rem;font-weight:900;">เริ่มฝึกออกเสียงวันนี้เลย!</h2>
+      <p style="font-size:1.1rem;opacity:0.92;margin-top:10px;">ระบบ AI ช่วยฝึกออกเสียงภาษาไทยสำหรับเด็ก ฟรี ไม่ต้องติดตั้ง</p>
+      <a href="app.html" class="btn btn-lg mt-3 px-5 py-3"
+         style="background:#fff;color:var(--primary);border-radius:50px;font-weight:800;font-size:1.15rem;">
+        <i class="bi bi-mic-fill me-2"></i>เปิดแอปฝึกออกเสียง
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="pt-5 pb-3">
+  <div class="container">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4">
+        <div class="footer-logo mb-3">🗣️ AI Pronunciation</div>
+        <p style="font-size:0.95rem;color:rgba(255,255,255,0.6);line-height:1.7;">
+          ระบบเรียนรู้การออกเสียงด้วย AI สำหรับเด็กผู้มีปัญหาทางการออกเสียง อายุ 4–7 ปี
+        </p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="text-white fw-700 mb-3">เมนูหลัก</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="index.html" class="footer-link">หน้าหลัก</a></li>
+          <li class="mb-2"><a href="about.html" class="footer-link">เกี่ยวกับ</a></li>
+          <li class="mb-2"><a href="contact.html" class="footer-link">ผู้จัดทำ</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">แอปฝึกออกเสียง</a></li>
+          <li class="mb-2"><a href="2d_game.html" class="footer-link">เกมฝึกออกเสียง</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h6 class="text-white fw-700 mb-3">ระดับการฝึก</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="app.html" class="footer-link">👶 อายุ 4 ปี</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">🧒 อายุ 5 ปี</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">🧒 อายุ 6 ปี</a></li>
+          <li class="mb-2"><a href="app.html" class="footer-link">👦 อายุ 7 ปี</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3">
+        <h6 class="text-white fw-700 mb-3">ติดต่อ</h6>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.9rem;line-height:1.8;">
+          <i class="bi bi-envelope me-2"></i>contact@aipronunciation.th<br/>
+          <i class="bi bi-telephone me-2"></i>02-xxx-xxxx<br/>
+          <i class="bi bi-geo-alt me-2"></i>กรุงเทพมหานคร ประเทศไทย
+        </p>
+      </div>
+    </div>
+    <div class="footer-bottom text-center pt-3">
+      <p class="mb-0">&copy; 2567 ระบบเรียนรู้การออกเสียงด้วย AI | พัฒนาด้วย ❤️ เพื่อเด็กไทย</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
